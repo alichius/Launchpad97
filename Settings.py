@@ -13,7 +13,7 @@ STEPSEQ__LINK_WITH_SESSION = False
 # configure what user modes buttons do.
 # the 3 first value configure the 3 sub modes of button user mode 1, 
 # and following ones are for user mode 2 button
-USER_MODES = [
+USER_MODES = [ "session", "prosession",
 		"instrument", "device", "user 1",
 		 "drum stepseq", "melodic stepseq", "user 2"
 ]

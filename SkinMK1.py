@@ -13,6 +13,9 @@ class Colors:
 		class Session:
 			On = Rgb.AMBER
 			Off = Rgb.AMBER_THIRD
+		class ProSession:
+			On = Rgb.YELLOW
+			Off = Rgb.YELLOW_HALF
 		class Note:
 			On = Rgb.AMBER
 			Off = Rgb.AMBER_THIRD
@@ -60,6 +63,35 @@ class Colors:
 		StopClipTriggered = Rgb.ORANGE_BLINK_HALF
 		# Enabled = Rgb.GREEN
 		# Off = Rgb.GREEN_THIRD
+
+	class ProSession:  # session zoomin
+		On = Rgb.GREEN
+		Off = Rgb.GREEN_THIRD
+		class Shift:
+			On = Rgb.LIME_BLINK
+			Off = Rgb.LIME
+		class Click:
+			On = Rgb.AMBER_BLINK
+			Off = Rgb.AMBER
+		class Undo:
+			On = Rgb.GREEN
+			Off = Rgb.GREEN_THIRD
+		class Delete:
+			On = Rgb.RED_THIRD
+			Off = Rgb.RED_HALF
+		class Duplicate:
+			On = Rgb.ORANGE_HALF
+			Off = Rgb.ORANGE
+		class Double:
+			On = Rgb.YELLOW_HALF
+			Off = Rgb.YELLOW
+		class Quantize:
+			On = Rgb.MANDARIN_BLINK
+			Off = Rgb.MANDARIN
+		class SessionRec:
+			On = Rgb.RED_BLINK
+			Off = Rgb.RED
+
 
 	class Zooming:  # session zoomin
 		Selected = Rgb.AMBER
