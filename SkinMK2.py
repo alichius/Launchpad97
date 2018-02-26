@@ -63,6 +63,9 @@ class Colors:
     class ProSession:
         On = Rgb.BLUE
         Off = Rgb.BLACK
+        ClipStarted = Rgb.GREEN_PULSE
+        ClipStopped = Rgb.RED_THIRD
+        ClipTriggeredPlay = Rgb.GREEN_BLINK
         class Shift:
             On = Rgb.RED
             Off = Rgb.RED_THIRD

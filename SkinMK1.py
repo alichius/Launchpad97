@@ -67,6 +67,9 @@ class Colors:
     class ProSession:  # session zoomin
         On = Rgb.GREEN
         Off = Rgb.GREEN_THIRD
+        ClipStarted = Rgb.LIME
+        ClipTriggeredPlay = Rgb.LIME_BLINK
+        ClipStopped = Rgb.YELLOW_HALF
         class Shift:
             On = Rgb.LIME_BLINK
             Off = Rgb.LIME

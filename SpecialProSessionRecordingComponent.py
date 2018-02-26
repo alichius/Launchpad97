@@ -2,7 +2,6 @@
 import Live
 from _Framework.ClipCreator import ClipCreator
 from _Framework.SessionRecordingComponent import SessionRecordingComponent, track_playing_slot, track_is_recording
-from _Framework.ButtonElement import ButtonElement
 
 class SpecialProSessionRecordingComponent(SessionRecordingComponent):
 

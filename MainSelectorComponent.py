@@ -87,12 +87,12 @@ class MainSelectorComponent(ModeSelectorComponent):
         ###ZOOMING COMPONENT
         self._zooming = DeprecatedSessionZoomingComponent(self._session, enable_skinning = True)
         self._zooming.name = 'Session_Overview'
-        self._zooming.set_empty_value("Default.Button.Off")
+        self._zooming.set_empty_value("DefaultButton.Disabled")
 
         ###ZOOMING COMPONENT
         self._pro_zooming = DeprecatedSessionZoomingComponent(self._pro_session, enable_skinning = True)
         self._pro_zooming.name = 'Session_Overview'
-        self._pro_zooming.set_empty_value("Default.Button.Off")
+        self._pro_zooming.set_empty_value("DefaultButton.Disabled")
         
         #Non-Matrix buttons
         self._all_buttons = []
@@ -287,6 +287,7 @@ class MainSelectorComponent(ModeSelectorComponent):
                 self._setup_step_sequencer2(not as_active)
                 self._setup_instrument_controller(not as_active)
                 self._setup_session(not as_active, as_enabled)
+                self._setup_pro_session(not as_active, as_enabled)
                 self._setup_mixer(as_active)
                 self._update_control_channels()
                 self._mode_index = 3
@@ -304,10 +305,38 @@ class MainSelectorComponent(ModeSelectorComponent):
         assert isinstance(value, int)
         assert sender in self._modes_buttons
         new_mode = self._modes_buttons.index(sender)
-        if new_mode != 0:
-            super(MainSelectorComponent, self)._mode_value(value, sender) 
-        else:
+        if new_mode == 0:
             self._session_mode_value(value, sender)
+        elif new_mode == 3:
+            self._mixer_mode_value(value, sender)
+        else:
+            super(MainSelectorComponent, self)._mode_value(value, sender) 
+
+    def _mixer_mode_value(self, value, sender):
+        Live.Base.log("MainSelectorComponent - _mixer_mode_value: " + str(value) + "- sender: " + str(sender))
+        new_mode = 3
+        if sender.is_momentary():
+            now = int(round(time.time() * 1000))
+            if value > 0:
+                self._last_mixer_mode_button_press = now
+            else:
+                if now - self._last_mixer_mode_button_press < self._long_press:
+                    mode_observer = MomentaryModeObserver()
+                    mode_observer.set_mode_details(new_mode, self._controls_for_mode(new_mode), self._get_public_mode_index)
+                    self._modes_heap.append((new_mode, sender, mode_observer))
+                    self._update_mode()    
+                    if self._modes_heap[-1][1] == sender and not self._modes_heap[-1][2].is_mode_momentary():
+                        self.set_mode(new_mode)
+                    else:
+                        for mode, button, observer in self._modes_heap:
+                            if button == sender:
+                                self._modes_heap.remove((mode, button, observer))
+                                break
+        
+                        self._update_mode()
+        else:
+            self.set_mode(new_mode)    
+
             
     def _session_mode_value(self, value, sender):
         Live.Base.log("MainSelectorComponent - _session_mode_value: " + str(value) + "- sender: " + str(sender))
@@ -512,7 +541,7 @@ class MainSelectorComponent(ModeSelectorComponent):
         assert isinstance(as_active, type(False))#assert is boolean
         for button in self._nav_buttons:
             if as_navigation_enabled:
-                button.set_on_off_values("ProSession.On", "ProSession.Off")
+                button.set_on_off_values("Mode.ProSession.On", "Mode.ProSession.Off")
             else:
                 button.set_on_off_values("DefaultButton.Disabled", "DefaultButton.Disabled")
 
@@ -531,6 +560,7 @@ class MainSelectorComponent(ModeSelectorComponent):
                     scene.clip_slot(track_index).set_launch_button(None)
 
         if as_active:#Set up stop clip buttons and stop all clips button
+            self._activate_scene_buttons(True)
             if self._pro_session._stop_clip_buttons != None:
                 for button in self._pro_session._stop_clip_buttons:
                     button.set_enabled(as_active)
@@ -694,15 +724,15 @@ class MainSelectorComponent(ModeSelectorComponent):
             session_height = self._matrix.height()-1
     
         for scene_index in range(session_height):
-        #	scene = self._pro_session.scene(scene_index)
+            scene = self._pro_session.scene(scene_index)
         #	scene.set_triggered_value("Session.SceneTriggered")
         #	scene.name = 'Scene_' + str(scene_index)
             for track_index in range(self._matrix.width()):
-        #		clip_slot = scene.clip_slot(track_index)
+                clip_slot = scene.clip_slot(track_index)
         #		clip_slot.set_triggered_to_play_value("Session.ClipTriggeredPlay")
         #		clip_slot.set_triggered_to_record_value("Session.ClipTriggeredRecord")
-        #		clip_slot.set_stopped_value("Session.ClipStopped")
-        #		clip_slot.set_started_value("Session.ClipStarted")
+                clip_slot.set_stopped_value("ProSession.ClipStopped")
+                clip_slot.set_started_value("ProSession.ClipStarted")
         #		clip_slot.set_recording_value("Session.ClipRecording")
         #		clip_slot.set_record_button_value("Session.RecordButton")
         #		clip_slot.name = str(track_index) + '_Clip_Slot_' + str(scene_index)
