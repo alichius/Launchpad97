@@ -144,32 +144,32 @@ class SpecialClipSlotComponent(ClipSlotComponent):
         if self.is_enabled() and self._clip_slot is not None:
             if self._is_deleting() and value:
                 if self._is_shifting():
-                    Live.Base.log("SpecialClipSlotComponent _do_delete_scene")
+                    #Live.Base.log("SpecialClipSlotComponent _do_delete_scene")
                     self._parent._do_delete_scene(self._parent)
                 else:
-                    Live.Base.log("SpecialClipSlotComponent _do_delete_clip")
+                    #Live.Base.log("SpecialClipSlotComponent _do_delete_clip")
                     self._do_delete_clip()
             elif self._is_duplicating() and value:
                 if self._is_shifting():
-                    Live.Base.log("SpecialClipSlotComponent _do_duplicate_scene")
+                    #Live.Base.log("SpecialClipSlotComponent _do_duplicate_scene")
                     self._parent._do_duplicate_scene()
                 else:
-                    Live.Base.log("SpecialClipSlotComponent _do_duplicate_clip")
+                    #Live.Base.log("SpecialClipSlotComponent _do_duplicate_clip")
                     self._do_duplicate_clip()          
             elif self._is_doubling() and value:
-                Live.Base.log("SpecialClipSlotComponent _do_double_loop")
+                #Live.Base.log("SpecialClipSlotComponent _do_double_loop")
                 self._do_double_loop(self._clip_slot)
             elif self._is_quantizing() and value:
-                Live.Base.log("SpecialClipSlotComponent _do_quantize_clip")
+                #Live.Base.log("SpecialClipSlotComponent _do_quantize_clip")
                 self._do_quantize_clip(self._clip_slot)
             elif self._is_shifting() and value:
-                Live.Base.log("SpecialClipSlotComponent _do_select_clip")
+                #Live.Base.log("SpecialClipSlotComponent _do_select_clip")
                 self._do_select_clip(self._clip_slot)            
             else:
                 if value:
                     if self._should_arm():
                         self._do_track_arm()
-                    Live.Base.log("SpecialClipSlotComponent _do_launch_clip")
+                    #Live.Base.log("SpecialClipSlotComponent _do_launch_clip")
                     self._do_launch_clip(value)
 
 class SpecialSceneComponent(SceneComponent):
@@ -300,27 +300,27 @@ class SpecialProSessionComponent(SessionComponent):
         
         
     def _is_shifting(self):
-        Live.Base.log("SpecialProSessionComponent _is_shifting: " + str(self._shift_pressed))
+        #Live.Base.log("SpecialProSessionComponent _is_shifting: " + str(self._shift_pressed))
         return self._shift_pressed
     
     def _is_deleting(self):
-        Live.Base.log("SpecialProSessionComponent _is_deleting: " + str(self._delete_pressed))
+        #Live.Base.log("SpecialProSessionComponent _is_deleting: " + str(self._delete_pressed))
         return self._delete_pressed
     
     def _is_duplicating(self):
-        Live.Base.log("SpecialProSessionComponent _is_duplicating: " + str(self._duplicate_pressed))
+        #Live.Base.log("SpecialProSessionComponent _is_duplicating: " + str(self._duplicate_pressed))
         return self._duplicate_pressed
     
     def _is_doubling(self):
-        Live.Base.log("SpecialProSessionComponent _is_doubling: " + str(self._double_pressed))
+        #Live.Base.log("SpecialProSessionComponent _is_doubling: " + str(self._double_pressed))
         return self._double_pressed
     
     def _is_quantizing(self):
-        Live.Base.log("SpecialProSessionComponent _is_quantizing: " + str(self._quantize_pressed))
+        #Live.Base.log("SpecialProSessionComponent _is_quantizing: " + str(self._quantize_pressed))
         return self._quantize_pressed 
     
     def _should_arm(self):
-        Live.Base.log("SpecialProSessionComponent _should_arm: " + str(self._record_pressed or self._record_mode_on))
+        #Live.Base.log("SpecialProSessionComponent _should_arm: " + str(self._record_pressed or self._record_mode_on))
         return self._record_pressed or self._record_mode_on
     
     def _is_enabled(self):
@@ -352,7 +352,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._shift_button.add_value_listener(self._shift_button_value, identify_sender=True)
 
     def _shift_button_value(self, value, sender):
-        Live.Base.log("SpecialProSessionComponent _shift_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _shift_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         assert (self._shift_button != None)
         assert (value in range(128))
         if self.is_enabled():
@@ -385,7 +385,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._undo_button.add_value_listener(self._undo_button_value, identify_sender=True)
 
     def _undo_button_value(self, value, sender):
-        Live.Base.log("SpecialProSessionComponent _undo_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _undo_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         if self.is_enabled():
             if value != 0:
                 if self._shift_pressed:
@@ -416,7 +416,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._click_button.add_value_listener(self._click_value)
 
     def _click_value(self, value):
-        Live.Base.log("SpecialProSessionComponent _click_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _click_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         assert (self._click_button != None)
         assert (value in range(128))
         if self.is_enabled():
@@ -463,7 +463,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._delete_button.add_value_listener(self._delete_button_value, identify_sender=True)
 
     def _delete_button_value(self, value, sender):
-        Live.Base.log("SpecialProSessionComponent _delete_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _delete_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         assert (self._delete_button != None)
         assert (value in range(128))
         if self.is_enabled():
@@ -498,7 +498,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._duplicate_button.add_value_listener(self._duplicate_button_value, identify_sender=True)
 
     def _duplicate_button_value(self, value, sender):
-        Live.Base.log("SpecialProSessionComponent _duplicate_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _duplicate_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         assert (self._duplicate_button != None)
         assert (value in range(128))
         if self.is_enabled():
@@ -534,7 +534,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._double_button.add_value_listener(self._double_button_value, identify_sender=True)
 
     def _double_button_value(self, value, sender):
-        Live.Base.log("SpecialProSessionComponent _double_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _double_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         assert (self._double_button != None)
         assert (value in range(128))
         if self.is_enabled():
@@ -567,7 +567,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._record_button.add_value_listener(self._record_button_value, identify_sender=True)
 
     def _record_button_value(self, value, sender):
-        Live.Base.log("SpecialProSessionComponent _record_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _record_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         assert (self._record_button != None)
         assert (value in range(128))
         if self.is_enabled():
@@ -611,7 +611,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._quantize_button.add_value_listener(self._quantize_button_value, identify_sender=True)
 
     def _quantize_button_value(self, value, sender):
-        Live.Base.log("SpecialProSessionComponent _quantize_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
+        #Live.Base.log("SpecialProSessionComponent _quantize_button_value: " + str(value) + " - enabled:" + str(self.is_enabled()))
         assert (self._quantize_button != None)
         assert (value in range(128))
         if self.is_enabled():
@@ -670,13 +670,13 @@ class SpecialProSessionComponent(SessionComponent):
 
 # STOP TRACK button and its listener
     def _update_stop_track_clip_buttons(self):
-        Live.Base.log("SpecialProSessionComponent _update_stop_track_clip_buttons")
+        #Live.Base.log("SpecialProSessionComponent _update_stop_track_clip_buttons")
         if self.is_enabled():
             for index in xrange(self._num_tracks):
                 self._update_stop_clips_led(index)
 
     def _update_stop_clips_led(self, index):
-        #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led index: " + str(index))
+        ##Live.Base.log("SpecialProSessionComponent _update_stop_clips_led index: " + str(index))
         if ((self.is_enabled()) and (self._stop_track_clip_buttons != None) and (index < len(self._stop_track_clip_buttons))):
             button = self._stop_track_clip_buttons[index]
             tracks_to_use = self.tracks_to_use()
@@ -684,25 +684,25 @@ class SpecialProSessionComponent(SessionComponent):
             if 0 <= track_index < len(tracks_to_use):
                 track = tracks_to_use[track_index]
                 if(self._record_pressed):
-                    Live.Base.log("SpecialProSessionComponent _record_pressed")
+                    #Live.Base.log("SpecialProSessionComponent _record_pressed")
                     if track.arm:
                         button.send_value("Recording.On")
                     else:
                         button.send_value("Recording.Off")
                 elif(self._double_pressed):
-                    Live.Base.log("SpecialProSessionComponent _double_pressed")
+                    #Live.Base.log("SpecialProSessionComponent _double_pressed")
                     if track.solo:
                         button.send_value("Device.Bank.On")
                     else:
                         button.send_value("Device.Bank.Off")    
                 elif(self._duplicate_pressed):
-                    Live.Base.log("SpecialProSessionComponent _duplicate_pressed")
+                    #Live.Base.log("SpecialProSessionComponent _duplicate_pressed")
                     if track.mute:
                         button.send_value("TrackController.Mute.On")
                     else:
                         button.send_value("TrackController.Mute.Off")  
                 else:
-                    #Live.Base.log("SpecialProSessionComponent firedSolt")
+                    ##Live.Base.log("SpecialProSessionComponent firedSolt")
                     if track.fired_slot_index == -2:
                         button.send_value(self._stop_clip_triggered_value)
                     elif track.playing_slot_index >= 0:
@@ -714,7 +714,7 @@ class SpecialProSessionComponent(SessionComponent):
 
     @subject_slot_group('value')
     def _on_stop_track_value(self, value, button):
-        Live.Base.log("SpecialProSessionComponent _on_stop_track_value")
+        #Live.Base.log("SpecialProSessionComponent _on_stop_track_value")
         if self.is_enabled():
             if self._record_pressed:
                 if value is not 0 or not button.is_momentary():
@@ -791,7 +791,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._unlink()
 
     def update(self):
-        Live.Base.log("SpecialProSessionComponent update")
+        #Live.Base.log("SpecialProSessionComponent update")
         SessionComponent.update(self)
         if not self.is_enabled():
             for scene_index in range(len(self._side_buttons)):
@@ -814,7 +814,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._update_OSD()
 
     def set_enabled(self, enabled):
-        Live.Base.log("SpecialProSessionComponent set_enabled: " + str(enabled))
+        #Live.Base.log("SpecialProSessionComponent set_enabled: " + str(enabled))
         SessionComponent.set_enabled(self, enabled)
         self._session_record.set_enabled(enabled)
         if self._main_selector._main_mode_index == 0:

@@ -287,7 +287,7 @@ class MainSelectorComponent(ModeSelectorComponent):
                 self._setup_step_sequencer2(not as_active)
                 self._setup_instrument_controller(not as_active)
                 self._setup_session(not as_active, as_enabled)
-                self._setup_pro_session(not as_active, as_enabled)
+                self._setup_pro_session(not as_active, not as_enabled)
                 self._setup_mixer(as_active)
                 self._update_control_channels()
                 self._mode_index = 3
@@ -305,38 +305,10 @@ class MainSelectorComponent(ModeSelectorComponent):
         assert isinstance(value, int)
         assert sender in self._modes_buttons
         new_mode = self._modes_buttons.index(sender)
-        if new_mode == 0:
-            self._session_mode_value(value, sender)
-        elif new_mode == 3:
-            self._mixer_mode_value(value, sender)
-        else:
+        if new_mode != 0:
             super(MainSelectorComponent, self)._mode_value(value, sender) 
-
-    def _mixer_mode_value(self, value, sender):
-        Live.Base.log("MainSelectorComponent - _mixer_mode_value: " + str(value) + "- sender: " + str(sender))
-        new_mode = 3
-        if sender.is_momentary():
-            now = int(round(time.time() * 1000))
-            if value > 0:
-                self._last_mixer_mode_button_press = now
-            else:
-                if now - self._last_mixer_mode_button_press < self._long_press:
-                    mode_observer = MomentaryModeObserver()
-                    mode_observer.set_mode_details(new_mode, self._controls_for_mode(new_mode), self._get_public_mode_index)
-                    self._modes_heap.append((new_mode, sender, mode_observer))
-                    self._update_mode()    
-                    if self._modes_heap[-1][1] == sender and not self._modes_heap[-1][2].is_mode_momentary():
-                        self.set_mode(new_mode)
-                    else:
-                        for mode, button, observer in self._modes_heap:
-                            if button == sender:
-                                self._modes_heap.remove((mode, button, observer))
-                                break
-        
-                        self._update_mode()
         else:
-            self.set_mode(new_mode)    
-
+            self._session_mode_value(value, sender)
             
     def _session_mode_value(self, value, sender):
         Live.Base.log("MainSelectorComponent - _session_mode_value: " + str(value) + "- sender: " + str(sender))

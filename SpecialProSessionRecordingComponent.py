@@ -11,11 +11,11 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         self._is_record_mode = False
 
     def set_record_mode(self, record_mode):
-        Live.Base.log("SpecialSessionRecordingComponent - set_record_mode:  " + str(record_mode))
+        #Live.Base.log("SpecialSessionRecordingComponent - set_record_mode:  " + str(record_mode))
         self._is_record_mode = record_mode
 
     def set_enabled(self, enable):
-        Live.Base.log("SpecialSessionRecordingComponent - set_enabled:  " + str(enable))
+        #Live.Base.log("SpecialSessionRecordingComponent - set_enabled:  " + str(enable))
         super(SpecialProSessionRecordingComponent, self).set_enabled(enable)
         
     def _on_record_button_value(self):
