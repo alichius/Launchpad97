@@ -676,7 +676,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._update_stop_clips_led(index)
 
     def _update_stop_clips_led(self, index):
-        ##Live.Base.log("SpecialProSessionComponent _update_stop_clips_led index: " + str(index))
+        #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led index: " + str(index))
         if ((self.is_enabled()) and (self._stop_track_clip_buttons != None) and (index < len(self._stop_track_clip_buttons))):
             button = self._stop_track_clip_buttons[index]
             tracks_to_use = self.tracks_to_use()
@@ -702,7 +702,7 @@ class SpecialProSessionComponent(SessionComponent):
                     else:
                         button.send_value("TrackController.Mute.Off")  
                 else:
-                    ##Live.Base.log("SpecialProSessionComponent firedSolt")
+                    #Live.Base.log("SpecialProSessionComponent firedSolt")
                     if track.fired_slot_index == -2:
                         button.send_value(self._stop_clip_triggered_value)
                     elif track.playing_slot_index >= 0:
