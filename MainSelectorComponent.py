@@ -314,6 +314,7 @@ class MainSelectorComponent(ModeSelectorComponent):
             now = int(round(time.time() * 1000))
             if value > 0:
                 self._last_session_mode_button_press = now
+                self._turn_off_scene_buttons()
             else:
                 if now - self._last_session_mode_button_press < self._long_press:
                     mode_observer = MomentaryModeObserver()
@@ -510,10 +511,7 @@ class MainSelectorComponent(ModeSelectorComponent):
         # matrix
         self._activate_matrix(True)
 
-        for side_index in range(len(self._pro_session._side_buttons)):
-            self._side_buttons[side_index].set_enabled(as_active)
-            self._side_buttons[side_index].set_on_off_values("DefaultButton.Disabled", "DefaultButton.Disabled")
-          
+        self._turn_off_scene_buttons()
         
         for scene_index in range(self._pro_session._num_scenes):#iterate over scenes
             scene = self._pro_session.scene(scene_index)
@@ -707,6 +705,11 @@ class MainSelectorComponent(ModeSelectorComponent):
     def _activate_scene_buttons(self, active):
         for button in self._side_buttons:
             button.set_enabled(active)
+            
+    def _turn_off_scene_buttons(self):
+        for side_button in self._side_buttons:
+            side_button.set_on_off_values("DefaultButton.Disabled", "DefaultButton.Disabled")
+            side_button.turn_off()
 
     def _activate_matrix(self, active):
         for scene_index in range(8):

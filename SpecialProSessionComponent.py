@@ -360,7 +360,6 @@ class SpecialProSessionComponent(SessionComponent):
                 self._control_surface.show_message("SELECT/VIEW CLIP?")
                 self._shift_pressed = True
             else:
-                self._control_surface.show_message("")
                 self._shift_pressed = False
                 if (time.time() - self._last_button_time) < 0.25:
                     self.application().view.hide_view('Detail')
@@ -474,7 +473,6 @@ class SpecialProSessionComponent(SessionComponent):
                     self._control_surface.show_message("DELETE CLIP/SCENE?")
                     self._delete_pressed = True
                 else:
-                    self._control_surface.show_message("")
                     self._delete_pressed = False
                 self._update_delete_button()
     
@@ -509,7 +507,6 @@ class SpecialProSessionComponent(SessionComponent):
                     self._control_surface.show_message("DUPLICATE CLIP/SCENE (MUTE TRACK)?")
                     self._duplicate_pressed = True
                 else:
-                    self._control_surface.show_message("")
                     self._duplicate_pressed = False
                 self._update_stop_track_clip_buttons()
                 self._update_duplicate_button()
@@ -542,7 +539,6 @@ class SpecialProSessionComponent(SessionComponent):
                 self._control_surface.show_message("DOUBLE MIDI CLIP (SOLO TRACK)?")
                 self._double_pressed = True
             else:
-                self._control_surface.show_message("")
                 self._double_pressed = False
             self._update_stop_track_clip_buttons()
             self._update_double_button()
@@ -626,7 +622,6 @@ class SpecialProSessionComponent(SessionComponent):
                     self._control_surface.show_message("QUANTIZE CLIP?")
                     self._quantize_pressed = True
                 else:
-                    self._control_surface.show_message("")
                     self._quantize_pressed = False
             
     def _increment_quantize_value(self):
@@ -793,25 +788,17 @@ class SpecialProSessionComponent(SessionComponent):
     def update(self):
         #Live.Base.log("SpecialProSessionComponent update")
         SessionComponent.update(self)
-        if not self.is_enabled():
-            for scene_index in range(len(self._side_buttons)):
-                side_button = self._side_buttons[scene_index]
-                side_button.set_on_off_values("DefaultButton.Disabled", "DefaultButton.Disabled")
-                side_button.turn_off()
-                side_button.set_enabled(self.is_enabled())
-        else:    
-            self._update_shift_button()
-            self._update_undo_button()
-            self._update_click_button()
-            self._update_delete_button()
-            self._update_quantize_button()
-            self._update_duplicate_button()
-            self._update_double_button()
-            self._update_record_button()
+        self._update_shift_button()
+        self._update_undo_button()
+        self._update_click_button()
+        self._update_delete_button()
+        self._update_quantize_button()
+        self._update_duplicate_button()
+        self._update_double_button()
+        self._update_record_button()
             
-                
-            if self._main_selector._main_mode_index == 0:
-                self._update_OSD()
+        if self._main_selector._main_mode_index == 0:
+            self._update_OSD()
 
     def set_enabled(self, enabled):
         #Live.Base.log("SpecialProSessionComponent set_enabled: " + str(enabled))
