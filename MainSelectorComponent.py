@@ -22,7 +22,7 @@ class MainSelectorComponent(ModeSelectorComponent):
     """ Class that reassigns the button on the launchpad to different functions """
 
     def __init__(self, matrix, top_buttons, side_buttons, config_button, osd, control_surface, note_repeat, c_instance):
-        Live.Base.log("MainSelectorComponent - __init__ ")
+        #Live.Base.log("MainSelectorComponent - __init__ ")
         #verify matrix dimentions
         assert isinstance(matrix, ButtonMatrixElement)
         assert ((matrix.width() == 8) and (matrix.height() == 8))
@@ -149,6 +149,7 @@ class MainSelectorComponent(ModeSelectorComponent):
         return self._pro_session
 
     def _update_mode(self):
+        #Live.Base.log("MainSelectorComponent - _update_mode")
         mode = self._modes_heap[-1][0] #get first value of last _modes_heap tuple. _modes_heap tuple structure is (mode, sender, observer) 
 
         assert mode in range(self.number_of_modes()) # 8 for this script
@@ -273,7 +274,7 @@ class MainSelectorComponent(ModeSelectorComponent):
                 self._setup_sub_mode(Settings.USER_MODES[ self._sub_mode_list[self._main_mode_index] ] )
 
             elif self._main_mode_index == 1 or self._main_mode_index == 2:
-                self._setup_sub_mode(Settings.USER_MODES[ (self._main_mode_index-1) * 3 + self._sub_mode_list[self._main_mode_index] + 2]  )
+                self._setup_sub_mode(Settings.USER_MODES[ ((self._main_mode_index-1) * 3) + self._sub_mode_list[self._main_mode_index] + 2]  )
 
             elif self._main_mode_index == 3:
                 # mixer
@@ -332,6 +333,7 @@ class MainSelectorComponent(ModeSelectorComponent):
             self.set_mode(new_mode)		
         
     def _setup_sub_mode(self, mode):
+        #Live.Base.log("MainSelectorComponent - _setup_sub_mode " + str(mode))
         as_active = True
         as_enabled = True
         if mode == "instrument":
@@ -436,6 +438,7 @@ class MainSelectorComponent(ModeSelectorComponent):
             self._mode_index = 8			
         
     def _setup_session(self, as_active, as_navigation_enabled):
+        #Live.Base.log("MainSelectorComponent - _setup_session: " + str(as_active) + "- as_navigation_enabled: " + str(as_navigation_enabled))
         assert isinstance(as_active, type(False))#assert is boolean
         for button in self._nav_buttons:
             if as_navigation_enabled:
@@ -499,16 +502,21 @@ class MainSelectorComponent(ModeSelectorComponent):
         else:
             self._session.set_track_bank_buttons(None, None)
             self._session.set_scene_bank_buttons(None, None)
-            
+
             
     def _setup_pro_session(self, as_active):
         assert isinstance(as_active, type(False))#assert is boolean
 
         # matrix
         self._activate_matrix(True)
+
+        for side_index in range(len(self._pro_session._side_buttons)):
+            self._side_buttons[side_index].set_enabled(as_active)
+            self._side_buttons[side_index].set_on_off_values("DefaultButton.Disabled", "DefaultButton.Disabled")
+          
+        
         for scene_index in range(self._pro_session._num_scenes):#iterate over scenes
             scene = self._pro_session.scene(scene_index)
-
                 
             for track_index in range(self._pro_session._num_tracks):#iterate over tracks of a scene -> clip slots
                 if as_active:#set clip slot launch button
@@ -526,9 +534,6 @@ class MainSelectorComponent(ModeSelectorComponent):
                     button.set_enabled(as_active)
                 #    button.set_on_off_values("Session.StopClip", "DefaultButton.Disabled")
                 self._pro_session.set_stop_track_clip_buttons(self._pro_session._stop_clip_buttons)
-
-                self._side_buttons[self._pro_session._num_scenes].set_enabled(as_active)
-                self._side_buttons[self._pro_session._num_scenes].set_on_off_values("Session.StopClip", "DefaultButton.Disabled")
             else:
                 self._pro_session.set_stop_track_clip_buttons(None)
         else:
@@ -546,6 +551,7 @@ class MainSelectorComponent(ModeSelectorComponent):
             self._pro_zooming.set_scene_bank_buttons(None)
             self._pro_zooming.set_nav_buttons(None, None, None, None)
 
+        self._pro_session._set_enabled_recursive(as_active)
             
 
     def _setup_instrument_controller(self, as_active):
@@ -690,9 +696,9 @@ class MainSelectorComponent(ModeSelectorComponent):
         #        clip_slot.name = str(track_index) + '_Clip_Slot_' + str(scene_index)
         #        self._all_buttons.append(self._matrix.get_button(track_index, scene_index))
 
-        #self._zooming.set_stopped_value("Zooming.Stopped")
-        #self._zooming.set_selected_value("Zooming.Selected")
-        #self._zooming.set_playing_value("Zooming.Playing")        
+        #self._pro_zooming.set_stopped_value("Zooming.Stopped")
+        #self._pro_zooming.set_selected_value("Zooming.Selected")
+        #self._pro_zooming.set_playing_value("Zooming.Playing")        
 
     def _activate_navigation_buttons(self, active):
         for button in self._nav_buttons:
