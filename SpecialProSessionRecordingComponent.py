@@ -9,7 +9,6 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         self._target_track_component = target_track_component
         super(SpecialProSessionRecordingComponent, self).__init__(ClipCreator(), True, *a, **k)
         self._is_record_mode = False
-        self._is_fixed_length_mode = False
         
     def _set_parent(self, parent):        
         self._parent = parent        
@@ -18,9 +17,9 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         #Live.Base.log("SpecialSessionRecordingComponent - set_record_mode:  " + str(record_mode))
         self._is_record_mode = record_mode
         
-    def set_fixed_length_mode(self, fixed_length_mode):
+    def _is_fixed_length_on(self):
         #Live.Base.log("SpecialSessionRecordingComponent - set_record_mode:  " + str(record_mode))
-        self._is_fixed_length_mode = fixed_length_mode        
+        return self._parent._is_fixed_length_on()    
 
     def set_enabled(self, enable):
         #Live.Base.log("SpecialSessionRecordingComponent - set_enabled:  " + str(enable))
@@ -34,26 +33,30 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
             if self._is_record_mode:
                 self._handle_note_mode_record_behavior()
             elif not self._stop_recording():
+                Live.Base.log("SpecialSessionRecordingComponent - _start_recording")
                 self._start_recording()
 
     def _handle_note_mode_record_behavior(self):
         Live.Base.log("SpecialSessionRecordingComponent - _handle_note_mode_record_behavior")
-        track = self._target_track_component.target_track
-        
-        if self._track_can_record(track):
-            playing_slot = track_playing_slot(track)
-            should_overdub = not track_is_recording(track) and playing_slot != None
+        track = self._target_track_component.target_track #Selected Track
+        Live.Base.log("SpecialSessionRecordingComponent - track: " + str(track.name))
+        if self._track_can_record(track): #Track have input and is not master/return
+            playing_slot = track_playing_slot(track) #Clip of track is playing
+            Live.Base.log("SpecialSessionRecordingComponent - playing_slot: " + str(playing_slot))
+            should_overdub = not track_is_recording(track) and playing_slot != None # IS PLAYING BUT NOT RECORDING
             if should_overdub:
-                self.song().overdub = not self.song().overdub
-                if not self.song().is_playing:
-                    self.song().is_playing = True
+                Live.Base.log("SpecialSessionRecordingComponent - should_overdub")
+                self.song().overdub = True
+                playing_slot.fire()
             elif not self._stop_recording():
+                Live.Base.log("SpecialSessionRecordingComponent - Not should_overdub")
                 self._prepare_new_slot(track)
-                if self._is_fixed_length_mode:
+                if self._is_fixed_length_on():
                     self.song().trigger_session_record(self._get_fixed_length())
                 else:
                     self.song().trigger_session_record()
         elif not self._stop_recording():
+            Live.Base.log("SpecialSessionRecordingComponent - _handle_note_mode_record_behavior._start_recording")
             self._start_recording()
 
     def _prepare_new_slot(self, track):

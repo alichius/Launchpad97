@@ -98,7 +98,8 @@ class Colors:
         On = Rgb.LIGHT_BLUE_HALF_BLINK
         Off = Rgb.LIGHT_BLUE_HALF
         class Value:
-            On = Rgb.GREEN_HALF_BLINK
+            On = Rgb.GREEN_BLINK
+            Idle = Rgb.GREEN
             Off = Rgb.GREEN_HALF            
             
     class FixedLenght:

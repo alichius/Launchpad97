@@ -102,8 +102,8 @@ class Colors:
         On = Rgb.ORANGE_BLINK
         Off = Rgb.ORANGE_HALF
         class Value:
-            On = Rgb.GREEN_BLINK
-            Off = Rgb.GREEN_HALF
+            On = Rgb.MANDARIN_BLINK
+            Off = Rgb.MANDARIN_FULL
 
     class FixedLenght:
         On = Rgb.MANDARIN_BLINK
