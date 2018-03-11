@@ -9,14 +9,25 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         self._target_track_component = target_track_component
         super(SpecialProSessionRecordingComponent, self).__init__(ClipCreator(), True, *a, **k)
         self._is_record_mode = False
+        self._is_fixed_length_mode = False
+        
+    def _set_parent(self, parent):        
+        self._parent = parent        
 
     def set_record_mode(self, record_mode):
         #Live.Base.log("SpecialSessionRecordingComponent - set_record_mode:  " + str(record_mode))
         self._is_record_mode = record_mode
+        
+    def set_fixed_length_mode(self, fixed_length_mode):
+        #Live.Base.log("SpecialSessionRecordingComponent - set_record_mode:  " + str(record_mode))
+        self._is_fixed_length_mode = fixed_length_mode        
 
     def set_enabled(self, enable):
         #Live.Base.log("SpecialSessionRecordingComponent - set_enabled:  " + str(enable))
         super(SpecialProSessionRecordingComponent, self).set_enabled(enable)
+        
+    def _get_fixed_length(self):
+        return self._parent._get_fixed_length()        
         
     def _on_record_button_value(self):
         if self.is_enabled():
@@ -26,7 +37,9 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
                 self._start_recording()
 
     def _handle_note_mode_record_behavior(self):
+        Live.Base.log("SpecialSessionRecordingComponent - _handle_note_mode_record_behavior")
         track = self._target_track_component.target_track
+        
         if self._track_can_record(track):
             playing_slot = track_playing_slot(track)
             should_overdub = not track_is_recording(track) and playing_slot != None
@@ -36,7 +49,10 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
                     self.song().is_playing = True
             elif not self._stop_recording():
                 self._prepare_new_slot(track)
-                self._start_recording()
+                if self._is_fixed_length_mode:
+                    self.song().trigger_session_record(self._get_fixed_length())
+                else:
+                    self.song().trigger_session_record()
         elif not self._stop_recording():
             self._start_recording()
 
@@ -52,4 +68,6 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
             self._handle_limitation_error_on_scene_creation()
 
     def _track_can_record(self, track):
+        #trk_can_record = trk.can_be_armed and (trk.arm or trk.implicit_arm) and not slot.has_clip and self.song().session_record_status == Live.Song.SessionRecordStatus.off
         return track in self.song().tracks and track.can_be_armed
+            

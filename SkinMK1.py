@@ -86,7 +86,7 @@ class Colors:
             On = Rgb.ORANGE_HALF
             Off = Rgb.ORANGE
         class Double:
-            On = Rgb.YELLOW_HALF
+            On = Rgb.YELLOW_BLINK
             Off = Rgb.YELLOW
         class Quantize:
             On = Rgb.MANDARIN_BLINK
@@ -98,6 +98,28 @@ class Colors:
             On = Rgb.RED_BLINK
             Off = Rgb.RED_BLINK_THIRD
 
+    class LaunchQuant:
+        On = Rgb.ORANGE_BLINK
+        Off = Rgb.ORANGE_HALF
+        class Value:
+            On = Rgb.GREEN_BLINK
+            Off = Rgb.GREEN_HALF
+
+    class FixedLenght:
+        On = Rgb.MANDARIN_BLINK
+        Off = Rgb.MANDARIN_FULL
+        class Value:
+            On = Rgb.YELLOW_BLINK
+            Idle = Rgb.YELLOW
+            Off = Rgb.YELLOW_HALF
+
+    class RecQuant:
+        On = Rgb.RED_BLINK
+        Off = Rgb.RED_FULL
+        class Value:
+            On = Rgb.ORANGE_BLINK
+            Idle = Rgb.ORANGE
+            Off = Rgb.ORANGE_HALF
 
     class Zooming:  # session zoomin
         Selected = Rgb.AMBER

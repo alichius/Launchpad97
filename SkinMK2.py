@@ -82,17 +82,40 @@ class Colors:
             On = Rgb.LIGHT_BLUE
             Off = Rgb.LIGHT_BLUE_THIRD
         class Double:
-            On = Rgb.MINT
+            On = Rgb.MINT_BLINK
             Off = Rgb.MINT_THIRD
         class Quantize:
-            On = Rgb.MINT
-            Off = Rgb.BLACK
+            On = Rgb.GREEN_BLINK
+            Off = Rgb.GREEN_THIRD
         class SessionRec:
             On = Rgb.RED
             Off = Rgb.RED_THIRD
         class SessionRecMode:
             On = Rgb.RED_BLINK
             Off = Rgb.RED_THIRD_BLINK
+            
+    class LaunchQuant:
+        On = Rgb.LIGHT_BLUE_HALF_BLINK
+        Off = Rgb.LIGHT_BLUE_HALF
+        class Value:
+            On = Rgb.GREEN_HALF_BLINK
+            Off = Rgb.GREEN_HALF            
+            
+    class FixedLenght:
+        On = Rgb.BLUE_HALF_PULSE
+        Off = Rgb.BLUE_HALF
+        class Value:
+            On = Rgb.YELLOW_BLINK
+            Idle = Rgb.YELLOW
+            Off = Rgb.YELLOW_HALF        
+
+    class RecQuant:
+        On = Rgb.YELLOW_BLINK
+        Off = Rgb.YELLOW
+        class Value:
+            On = Rgb.BLUE_HALF
+            Idle = Rgb.BLUE
+            Off = Rgb.BLUE_HALF
 
     class Zooming:#session zoomin
         Selected = Rgb.AMBER
