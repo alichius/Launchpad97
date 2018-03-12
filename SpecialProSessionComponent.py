@@ -156,33 +156,33 @@ class SpecialClipSlotComponent(ClipSlotComponent):
                 self._get_song().session_record = True            
 
     def _do_launch_clip(self, value):
-        Live.Base.log("SpecialClipSlotComponent _do_launch_clip")
+        #Live.Base.log("SpecialClipSlotComponent _do_launch_clip")
         button = self._launch_button_value.subject # MATRIX BUTTON
         object_to_launch = self._clip_slot # BUTTON SLOT
         launch_pressed = value or not button.is_momentary() # LAUNCH MSG
         
         if self.has_clip(): #Have CLIP
-            Live.Base.log("SpecialClipSlotComponent has_clip")
+            #Live.Base.log("SpecialClipSlotComponent has_clip")
             object_to_launch = self._clip_slot.clip
         else:
             self._has_fired_slot = True
             
         if button.is_momentary():
             if(self._is_fixed_length_on() and not self.has_clip()):
-                Live.Base.log("SpecialClipSlotComponent fire _get_fixed_length")
+                #Live.Base.log("SpecialClipSlotComponent fire _get_fixed_length")
                 object_to_launch.fire(record_length=self._get_fixed_length())
             else:
-                Live.Base.log("SpecialClipSlotComponent set_fire_button_state")
+                #Live.Base.log("SpecialClipSlotComponent set_fire_button_state")
                 object_to_launch.set_fire_button_state(value != 0)
         elif launch_pressed:
             if(self._is_fixed_length_on() and  self.has_clip()):
-                Live.Base.log("SpecialClipSlotComponent fire _get_fixed_length")
+                #Live.Base.log("SpecialClipSlotComponent fire _get_fixed_length")
                 object_to_launch.fire(record_length=self._get_fixed_length())
             else:
-                Live.Base.log("SpecialClipSlotComponent fire")
+                #Live.Base.log("SpecialClipSlotComponent fire")
                 object_to_launch.fire()    
         if launch_pressed and self.song().select_on_launch:
-            Live.Base.log("SpecialClipSlotComponent select_on_launch")
+            #Live.Base.log("SpecialClipSlotComponent select_on_launch")
             self.song().view.highlighted_clip_slot = self._clip_slot
             self.application().view.show_view('Detail/Clip')
 

@@ -58,6 +58,7 @@ class MainSelectorComponent(ModeSelectorComponent):
         for index in range(4):
             self._sub_mode_list[index] = 0
         self.set_mode_buttons(self._mode_buttons)
+        self._last_mode_index = 0 
             
         ###SESSION COMPONENT			
         if Settings.SESSION__STOP_BUTTONS:#session with bottom stop buttons
@@ -302,10 +303,12 @@ class MainSelectorComponent(ModeSelectorComponent):
         assert isinstance(value, int)
         assert sender in self._modes_buttons
         new_mode = self._modes_buttons.index(sender)
-        if new_mode != 0:
-            super(MainSelectorComponent, self)._mode_value(value, sender) 
-        else:
+        if new_mode == 0:
             self._session_mode_value(value, sender)
+        elif new_mode == 3:
+            self._mixer_mode_value(value, sender)
+        else:
+            super(MainSelectorComponent, self)._mode_value(value, sender) 
             
     def _session_mode_value(self, value, sender):
         #Live.Base.log("MainSelectorComponent - _session_mode_value: " + str(value) + "- sender: " + str(sender))
@@ -332,6 +335,47 @@ class MainSelectorComponent(ModeSelectorComponent):
                         self._update_mode()
         else:
             self.set_mode(new_mode)		
+            
+            
+    def _mixer_mode_value(self, value, sender):
+        new_mode = 3
+        
+        if sender.is_momentary():
+            now = int(round(time.time() * 1000))
+            if value > 0:
+                self._last_mode_index = self._main_mode_index
+                self._last_mixer_mode_button_press = now
+                mode_observer = MomentaryModeObserver()
+                mode_observer.set_mode_details(new_mode, self._controls_for_mode(new_mode), self._get_public_mode_index)
+                self._modes_heap.append((new_mode, sender, mode_observer))
+                self._update_mode()
+            elif self._modes_heap[-1][1] == sender and not self._modes_heap[-1][2].is_mode_momentary():
+                if now - self._last_mixer_mode_button_press > self._long_press:
+                    new_mode = self._last_mode_index
+                    mode_observer = MomentaryModeObserver()
+                    mode_observer.set_mode_details(new_mode, self._controls_for_mode(new_mode), self._get_public_mode_index)
+                    self._modes_heap.append((new_mode, sender, mode_observer))
+                    self._update_mode()    
+                    if self._modes_heap[-1][1] == sender and not self._modes_heap[-1][2].is_mode_momentary():
+                        self.set_mode(new_mode)
+                    else:
+                        for mode, button, observer in self._modes_heap:
+                            if button == sender:
+                                self._modes_heap.remove((mode, button, observer))
+                                break
+        
+                        self._update_mode()
+                else:
+                    self.set_mode(new_mode)
+            else:
+                for mode, button, observer in self._modes_heap:
+                    if button == sender:
+                        self._modes_heap.remove((mode, button, observer))
+                        break
+
+                self._update_mode()
+        else:
+            self.set_mode(new_mode)            
         
     def _setup_sub_mode(self, mode):
         #Live.Base.log("MainSelectorComponent - _setup_sub_mode " + str(mode))
