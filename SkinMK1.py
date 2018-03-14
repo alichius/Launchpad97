@@ -321,7 +321,11 @@ class Colors:
                 
     class DrumGroup:
         PadEmpty = Rgb.BLACK
-        PadFilled = Rgb.GREEN_THIRD
+        PadFilled1 = Rgb.GREEN_THIRD
+        PadFilled2 = Rgb.YELLOW_HALF
+        PadFilled3 = Rgb.ORANGE_HALF
+        PadFilled4 = Rgb.RED_THIRD
+        PadFilled5 = Rgb.AMBER_THIRD
         PadSelected = Rgb.GREEN
         PadSelectedNotSoloed = Rgb.AMBER
         PadMuted = Rgb.AMBER

@@ -227,7 +227,7 @@ class NoteSelectorComponent(ControlSurfaceComponent):
                     note = self._root_note + i
                     if self.is_drumrack:
                         if self._drum_group_device.drum_pads[note].chains:
-                            self._offset_buttons[i].set_on_off_values("DrumGroup.PadSelected","DrumGroup.PadFilled")
+                            self._offset_buttons[i].set_on_off_values("DrumGroup.PadSelected","DrumGroup.PadFilled1")
                         else:
                             self._offset_buttons[i].set_on_off_values("DrumGroup.PadSelected", "DrumGroup.PadEmpty")
                     else:

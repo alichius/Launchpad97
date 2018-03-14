@@ -408,6 +408,7 @@ class SpecialProSessionComponent(SessionComponent):
         return self._quantize_pressed 
     
     def _is_fixed_length_on(self):
+        #Live.Base.log("SpecialProSessionComponent _is_fixed_length_on: " + str(self._fixed_length_on))
         return self._fixed_length_on
     
     def _should_arm(self):
@@ -459,6 +460,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._update_stop_track_clip_buttons()
             
     def _update_shift_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_shift_button")
         if self.is_enabled() and self._shift_button != None:
             self._shift_button.set_on_off_values("ProSession.Shift")
             if self._shift_pressed:
@@ -514,6 +516,7 @@ class SpecialProSessionComponent(SessionComponent):
             self.update()
             
     def _tap_tempo_value(self, value):
+        #Live.Base.log("SpecialProSessionComponent _tap_tempo_value")
         if self.is_enabled():
             if value or not self._click_button.is_momentary():
                 if not self._end_undo_step_task.is_running:
@@ -522,6 +525,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self.song().tap_tempo()
          
     def _update_click_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_click_button")
         if self.is_enabled() and self._click_button != None:
             self._click_button.set_on_off_values("ProSession.Click")
             if self.song().metronome:
@@ -530,6 +534,7 @@ class SpecialProSessionComponent(SessionComponent):
                 self._click_button.turn_off()   
                 
     def _on_metronome_status_changed(self):
+        #Live.Base.log("SpecialProSessionComponent _on_metronome_status_changed")
         if self.is_enabled():
             self._update_click_button()            
 
@@ -561,6 +566,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._update_undo_button()                    
 
     def _update_undo_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_undo_button")
         if self.is_enabled() and self._undo_button != None:
             self._undo_button.set_on_off_values("ProSession.Undo")
             if self.song().can_undo:
@@ -598,6 +604,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._update_stop_track_clip_buttons()
      
     def _update_quantize_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_quantize_button")
         if self.is_enabled() and self._quantize_button != None:
             self._quantize_button.set_on_off_values("ProSession.Quantize")
             if self._record_quantization_on:
@@ -637,7 +644,8 @@ class SpecialProSessionComponent(SessionComponent):
         self._update_quantize_button()
         self._update_stop_track_clip_buttons()
    
-    def _on_clip_trigger_quantization_changed_in_live(self):         quant_value = self._get_song().clip_trigger_quantization
+    def _on_clip_trigger_quantization_changed_in_live(self):
+        #Live.Base.log("SpecialProSessionComponent _on_clip_trigger_quantization_changed_in_live")         quant_value = self._get_song().clip_trigger_quantization
         if(quant_value != _Q.q_no_q):
             self._control_surface.show_message("LAUNCH QUANTIZATION ON: " + str(LAUNCH_QNTZ_NAMES[LAUNCH_QNTZ_RATES.index(quant_value)]))
         else: 
@@ -674,6 +682,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._update_stop_track_clip_buttons()
     
     def _update_double_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_double_button")
         if self.is_enabled() and self._double_button != None:
             self._double_button.set_on_off_values("ProSession.Double")
             if self._fixed_length_on:
@@ -721,6 +730,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._update_delete_button()
     
     def _update_delete_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_delete_button")
         if self.is_enabled() and self._delete_button != None:
             self._delete_button.set_on_off_values("ProSession.Delete")
             if self._delete_pressed:
@@ -756,6 +766,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._update_duplicate_button()
     
     def _update_duplicate_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_duplicate_button")
         if self.is_enabled() and self._duplicate_button != None:
             self._duplicate_button.set_on_off_values("ProSession.Duplicate")
             if self._duplicate_pressed:
@@ -800,6 +811,7 @@ class SpecialProSessionComponent(SessionComponent):
             self._update_record_button()
 
     def _update_record_button(self):
+        #Live.Base.log("SpecialProSessionComponent _update_record_button")
         if self.is_enabled():
             if self._record_mode_on:
                 self._record_button.set_on_off_values("ProSession.SessionRecMode")
@@ -868,6 +880,7 @@ class SpecialProSessionComponent(SessionComponent):
                 button.send_value(4)
          
     def _update_clip_trigger_leds(self, index):
+        #Live.Base.log("SpecialProSessionComponent _update_clip_trigger_leds: " + str(index))
         button = self._stop_track_clip_buttons[index]
         if(index==0):
             if(self._get_song().clip_trigger_quantization == _Q.q_no_q):
@@ -898,6 +911,7 @@ class SpecialProSessionComponent(SessionComponent):
                 button.send_value("LaunchQuant.Value.Off")            
                
     def _update_rec_qntz_leds(self, index):
+        #Live.Base.log("SpecialProSessionComponent _update_rec_qntz_leds: " + str(index))
         button = self._stop_track_clip_buttons[index]
         if(index==0):
             if(self._record_quantization_on):
@@ -933,6 +947,7 @@ class SpecialProSessionComponent(SessionComponent):
                 button.send_value("RecQuant.Value.Off")                
                     
     def _update_fixed_lenght_leds(self, index):
+        #Live.Base.log("SpecialProSessionComponent _update_fixed_lenght_leds: " + str(index))
         button = self._stop_track_clip_buttons[index]
         if(index==0):
             if(self._fixed_length_on):
