@@ -1150,3 +1150,11 @@ class SpecialProSessionComponent(SessionComponent):
                 self._control_surface.show_message('FIXED LENGTH:  ' + str(int(self._get_fixed_length() / self.song().signature_denominator)) + tag)
             else:
                 self._control_surface.show_message('FIXED LENGTH:  OFF')
+                
+    def tracks_to_use(self):
+        list_of_tracks = None
+        if self._mixer != None:
+            list_of_tracks = self._mixer.tracks_to_use()
+        else:
+            list_of_tracks = self.song().visible_tracks
+        return list_of_tracks                

@@ -313,8 +313,8 @@ class Colors:
             On = Rgb.AMBER
             Off = Rgb.AMBER_THIRD
         class Undo:
-            On = Rgb.AMBER
-            Off = Rgb.AMBER_THIRD
+            On = Rgb.YELLOW
+            Off = Rgb.YELLOW_HALF
         class Solo:
             On = Rgb.AMBER
             Off = Rgb.AMBER_THIRD
@@ -409,7 +409,7 @@ class Colors:
             Mode = Rgb.GREEN
         class NoteRepeater:
             On = Rgb.RED_BLINK
-            Off = Rgb.BLACK
+            Off = Rgb.RED_BLINK_THIRD
         class Quant:
             On = Rgb.GREEN
             Off = Rgb.GREEN_THIRD
