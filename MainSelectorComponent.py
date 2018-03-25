@@ -159,11 +159,22 @@ class MainSelectorComponent(ModeSelectorComponent):
         assert isinstance(value, int)
         assert sender in self._modes_buttons
         new_mode = self._modes_buttons.index(sender)
-        if new_mode == 0 and self._last_mode_index == 0 and value > 0:
-            self._pro_session_on = not self._pro_session_on
+        now = int(round(time.time() * 1000))
+        if new_mode == 0 and self._last_mode_index == 0:
+            #Live.Base.log("MainSelectorComponent - _mode_value new_mode == 0 and self._last_mode_index == 0")
+            if value > 0:
+                #Live.Base.log("MainSelectorComponent - _mode_value value > 0")
+                self._last_session_mode_button_press = now
+            else: 
+                if now - self._last_session_mode_button_press < self._long_press:
+                    #Live.Base.log("MainSelectorComponent - _mode_value self._pro_session_on switch")
+                    self._pro_session_on = not self._pro_session_on
         #Live.Base.log("MainSelectorComponent - _mode_value.self._pro_session_on: " + str(self._pro_session_on))
         self._last_mode_index = new_mode             
-        super(MainSelectorComponent, self)._mode_value(value, sender) 
+        super(MainSelectorComponent, self)._mode_value(value, sender)
+        if value == 0:
+            self._update_mode() 
+
 
     def number_of_modes(self):
         return 1 + 3 + 3 + 1
