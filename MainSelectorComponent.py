@@ -45,6 +45,7 @@ class MainSelectorComponent(ModeSelectorComponent):
         self._c_instance = c_instance
         self._pro_session_on = False
         self._long_press = 500
+        self._last_session_mode_button_press = int(round(time.time() * 1000))
         self._aux_scene = None
         #Non-Matrix buttons
         self._all_buttons = []
@@ -140,11 +141,11 @@ class MainSelectorComponent(ModeSelectorComponent):
                 self._sub_mode_list[self._main_mode_index] = 0
                 self._mode_index = 0
                 self.update()
-
+        
         else:
             self._main_mode_index = mode
             self.update()
-
+        
     def set_mode(self, mode):
         self._clean_heap()
         self._modes_heap = [(mode, None, None)]
@@ -158,6 +159,7 @@ class MainSelectorComponent(ModeSelectorComponent):
         assert len(self._modes_buttons) > 0
         assert isinstance(value, int)
         assert sender in self._modes_buttons
+        session_mode_changed = False
         new_mode = self._modes_buttons.index(sender)
         now = int(round(time.time() * 1000))
         if new_mode == 0 and self._last_mode_index == 0:
@@ -169,12 +171,13 @@ class MainSelectorComponent(ModeSelectorComponent):
                 if now - self._last_session_mode_button_press < self._long_press:
                     #Live.Base.log("MainSelectorComponent - _mode_value self._pro_session_on switch")
                     self._pro_session_on = not self._pro_session_on
+                    session_mode_changed = True
         #Live.Base.log("MainSelectorComponent - _mode_value.self._pro_session_on: " + str(self._pro_session_on))
         self._last_mode_index = new_mode             
-        super(MainSelectorComponent, self)._mode_value(value, sender)
-        if value == 0:
-            self._update_mode() 
 
+        super(MainSelectorComponent, self)._mode_value(value, sender)
+        if session_mode_changed == True:
+            self._update_mode() 
 
     def number_of_modes(self):
         return 1 + 3 + 3 + 1

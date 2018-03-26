@@ -940,13 +940,13 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 button.send_value("RecQuant.On")
             else:
                 button.send_value("RecQuant.Off")  
-        elif(index==1 and (self._get_song().midi_recording_quantization != Rec_Q.rec_q_quarter)):
-            if(self._record_quantization_on):
+        elif(index==1):
+            if((self._get_song().midi_recording_quantization != Rec_Q.rec_q_quarter) and self._record_quantization_on):
                 button.send_value("ProSession.On")
             else:
                 button.send_value("ProSession.Off")
-        elif(index==2 and (self._get_song().midi_recording_quantization!= Rec_Q.rec_q_thirtysecond)):
-            if(self._record_quantization_on):
+        elif(index==2):
+            if ((self._get_song().midi_recording_quantization!= Rec_Q.rec_q_thirtysecond) and self._record_quantization_on):
                 button.send_value("ProSession.On")
             else:
                 button.send_value("ProSession.Off")
@@ -977,15 +977,15 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             else:
                 button.send_value("FixedLenght.Off")  
         elif(index==1):
-            if(self._fixed_length == 0):
-                button.send_value("ProSession.Off")
-            else:
+            if(self._fixed_length != 0 and self._fixed_length_on):
                 button.send_value("ProSession.On")
+            else:
+                button.send_value("ProSession.Off")
         elif(index==2):
-            if(self._fixed_length == 31):
-                button.send_value("ProSession.Off")
-            else:
+            if(self._fixed_length != 31 and self._fixed_length_on):
                 button.send_value("ProSession.On")
+            else:
+                button.send_value("ProSession.Off")
         else:
             if(self._fixed_length in FIXED_LENGTH_VALUES):
                 fl_idx = FIXED_LENGTH_VALUES.index(self._fixed_length)
