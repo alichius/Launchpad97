@@ -851,26 +851,22 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         if self.is_enabled():
             for index in xrange(self._num_tracks):
                 self._update_stop_clips_led(index)
+            for index in xrange(8):
+                self._update_select_leds(index)                
 
     def _update_stop_clips_led(self, index):
         #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led index: " + str(index) + " / " + str(self._stop_track_clip_buttons))
         if not self._is_pro_mode_on():
             #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led super: " + str(index))
             super(SpecialSessionComponent, self)._update_stop_clips_led(index) 
-        elif ((self.is_enabled()) and (self._stop_track_clip_buttons != None) and (index < len(self._stop_track_clip_buttons))):
+        elif (self._stop_track_clip_buttons != None) and (index < len(self._stop_track_clip_buttons)):
             #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led PRO: " + str(index))
             button = self._stop_track_clip_buttons[index]
             tracks_to_use = self.tracks_to_use()
             track_index = index + self.track_offset()
             if 0 <= track_index < len(tracks_to_use):
                 track = tracks_to_use[track_index]
-                if(self._quantize_pressed):
-                    self._update_rec_qntz_leds(index)
-                elif(self._double_pressed):
-                    self._update_fixed_lenght_leds(index)            
-                elif(self._shift_pressed):
-                    self._update_clip_trigger_leds(index)            
-                elif(self._record_pressed):
+                if(self._record_pressed and track.can_be_armed):
                     #Live.Base.log("SpecialProSessionComponent _record_pressed: " + str(index))
                     if track.arm:
                         button.send_value("Recording.On")
@@ -900,6 +896,18 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             else:
                 #Live.Base.log("SpecialProSessionComponent button.send_value(4): " + str(index))
                 button.send_value(4)
+                
+    def _update_select_leds(self, index):
+        #Live.Base.log("SpecialProSessionComponent _update_select_leds index: " + str(index) + " / " + str(self._stop_track_clip_buttons))
+        if self._is_pro_mode_on() and (self._stop_track_clip_buttons != None) and (index < len(self._stop_track_clip_buttons)):
+            #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led PRO: " + str(index))
+                if(self._quantize_pressed):
+                    self._update_rec_qntz_leds(index)
+                elif(self._double_pressed):
+                    self._update_fixed_lenght_leds(index)            
+                elif(self._shift_pressed):
+                    self._update_clip_trigger_leds(index)            
+            
          
     def _update_clip_trigger_leds(self, index):
         #Live.Base.log("SpecialProSessionComponent _update_clip_trigger_leds: " + str(index))

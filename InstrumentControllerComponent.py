@@ -189,9 +189,9 @@ class InstrumentControllerComponent(CompoundComponent):
     def _can_scroll_octave_up(self):
         if(self._scales.is_drumrack):
             if self._note_repeat_selector:
-                return self._scales._octave < 5
+                return self._scales._octave < 6
             else:    
-                return self._scales._octave < 4
+                return self._scales._octave < 5
         else:
             return self._scales._octave < 10
 
@@ -205,7 +205,7 @@ class InstrumentControllerComponent(CompoundComponent):
 
     def _can_scroll_octave_down(self):
         if(self._scales.is_drumrack):
-            return self._scales._octave  > -1
+            return self._scales._octave  > 0
         else:
             return self._scales._octave  > -2
 
@@ -531,15 +531,16 @@ class InstrumentControllerComponent(CompoundComponent):
                 #button.force_next_send()
 
             if self._scales.is_drumrack:
-
+                Live.Base.log("InstrumentControllerComponent - OCTAVE: " + str(self._scales._octave))
+                
                 for button, (x, y) in self._matrix.iterbuttons():
                     if button:
                         note = 0
 
                         if(x < 4):
-                            note = 16 * self._scales._octave + x + 4 * (8 - y)
+                            note = 16 * (self._scales._octave -1)+ x + 4 * (8 - y)
                         else:
-                            note = 16 * self._scales._octave + 32 + x + 4 * (7 - y)     
+                            note = 16 * (self._scales._octave -1) + 32 + x + 4 * (7 - y)     
 
                         if self._note_repeat_selector:
                             if(x >= 4 and y<4):
@@ -612,7 +613,8 @@ class InstrumentControllerComponent(CompoundComponent):
                             button.set_channel(non_feedback_channel)
                         #button.force_next_send()
                         #button.turn_off()
-
+                        
+                        
             else:
                 if self._scales.is_quick_scale:
                     
