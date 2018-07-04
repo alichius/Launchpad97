@@ -352,14 +352,16 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._end_undo_step_task = self._tasks.add(Task.sequence(Task.wait(1.5), Task.run(self.song().end_undo_step)))
         self._end_undo_step_task.kill()
         
+        self._launch_quantization = self._get_song().clip_trigger_quantization
+        self._launch_quantization_on = True
+        self._song.add_clip_trigger_quantization_listener(self._on_clip_trigger_quantization_changed_in_live)
+        
         self._record_quantization =Rec_Q.rec_q_sixtenth
         self._record_quantization_on = False
         self._song.add_midi_recording_quantization_listener(self._on_record_quantization_changed_in_live)
         
-        self._song.add_clip_trigger_quantization_listener(self._on_clip_trigger_quantization_changed_in_live)
-        
-        self._fixed_length_on = False
         self._fixed_length = 0
+        self._fixed_length_on = False
         
         self._song.add_metronome_listener(self._on_metronome_status_changed)
         
@@ -470,7 +472,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         assert (value in range(128))
         if self.is_enabled() and self._is_pro_mode_on() and self._shift_button != None:
             if ((value is not 0) or (not sender.is_momentary())):
-                self._control_surface.show_message("SELECT/VIEW CLIP [SET LAUNCH QUANTIZATION]?")
+                self._control_surface.show_message("SELECT/VIEW CLIP [SET LAUNCH QUANTIZATION -> NOW "+ self._get_launch_quant_msg() +" ]?")
                 self._shift_pressed = True
             else:
                 self._shift_pressed = False
@@ -490,25 +492,17 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 
     def _increment_launch_qntz_value(self):
         #Live.Base.log("SpecialProSessionComponent _increment_launch_qntz_value")
-        quant_value = self._get_song().clip_trigger_quantization
-        quant_on = quant_value != _Q.q_no_q
-        if(quant_on):
-            quant_idx = LAUNCH_QNTZ_RATES.index(quant_value)
+        if(self._launch_quantization_on):
+            quant_idx = LAUNCH_QNTZ_RATES.index(self._launch_quantization)
             if(quant_idx<LAUNCH_QNTZ_RATES_LEN-1):
                 self.song().clip_trigger_quantization = LAUNCH_QNTZ_RATES[quant_idx+1]
-        else:
-            self.song().clip_trigger_quantization = _Q.q_8_bars
             
     def _decrement_launch_qntz_value(self):
         #Live.Base.log("SpecialProSessionComponent _decrement_launch_qntz_value")        
-        quant_value = self._get_song().clip_trigger_quantization
-        quant_on = quant_value != _Q.q_no_q
-        if(quant_on):
-            quant_idx = LAUNCH_QNTZ_RATES.index(quant_value)
+        if(self._launch_quantization_on):
+            quant_idx = LAUNCH_QNTZ_RATES.index(self._launch_quantization)
             if(quant_idx>0):
                 self.song().clip_trigger_quantization = LAUNCH_QNTZ_RATES[quant_idx-1]              
-            else:
-                self.song().clip_trigger_quantization = _Q.q_no_q
                 
 # CLICK button and its listener
     def _set_click_button(self, button=None):
@@ -625,7 +619,6 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                     self._quantize_pressed = False
             self.update()
             
-            
     def _update_quantize_button(self):
         #Live.Base.log("SpecialProSessionComponent _update_quantize_button")
         if self.is_enabled() and self._is_pro_mode_on() and self._quantize_button != None:
@@ -637,42 +630,57 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             
     def _increment_rec_qntz_value(self):
         #Live.Base.log("SpecialProSessionComponent _increment_rec_qntz_value")
-        quant_value = self._get_song().midi_recording_quantization
-        quant_on = quant_value !=Rec_Q.rec_q_no_q
+        rec_quant_value = self._get_song().midi_recording_quantization
+        quant_on = rec_quant_value !=Rec_Q.rec_q_no_q
         if(quant_on):
-            quant_idx = REC_QNTZ_RATES.index(quant_value)
+            quant_idx = REC_QNTZ_RATES.index(rec_quant_value)
             if(quant_idx<REC_QNTZ_RATES_LEN-1):
                 self.song().midi_recording_quantization = REC_QNTZ_RATES[quant_idx+1]
 
     def _decrement_rec_qntz_value(self):
         #Live.Base.log("SpecialProSessionComponent _decrement_rec_qntz_value")        
-        quant_value = self._get_song().midi_recording_quantization
-        quant_on = quant_value !=Rec_Q.rec_q_no_q
+        rec_quant_value = self._get_song().midi_recording_quantization
+        quant_on = rec_quant_value !=Rec_Q.rec_q_no_q
         if(quant_on):
-            quant_idx = REC_QNTZ_RATES.index(quant_value)
+            quant_idx = REC_QNTZ_RATES.index(rec_quant_value)
             if(quant_idx>0):
                 self.song().midi_recording_quantization = REC_QNTZ_RATES[quant_idx-1]
     
     def _on_record_quantization_changed_in_live(self):
         #Live.Base.log("SpecialProSessionComponent _on_record_quantization_changed_in_live") 
-        quant_value = self._get_song().midi_recording_quantization
-        quant_on = quant_value !=Rec_Q.rec_q_no_q
+        rec_quant_value = self._get_song().midi_recording_quantization
+        quant_on = rec_quant_value !=Rec_Q.rec_q_no_q
         if quant_on:
-            self._record_quantization = quant_value
+            self._record_quantization = rec_quant_value
         self._record_quantization_on = quant_on
         if(self._record_quantization_on):
-            self._control_surface.show_message("RECORD QUANTIZATION ON: " + str(REC_QNTZ_NAMES[REC_QNTZ_RATES.index(quant_value)]))
+            self._control_surface.show_message("RECORD QUANTIZATION ON: " + self._get_record_quant_msg())
         else: 
-            self._control_surface.show_message("RECORD QUANTIZATION OFF")
+            self._control_surface.show_message("RECORD QUANTIZATION " + self._get_record_quant_msg())
         self.update()
    
-    def _on_clip_trigger_quantization_changed_in_live(self):
-        #Live.Base.log("SpecialProSessionComponent _on_clip_trigger_quantization_changed_in_live")         quant_value = self._get_song().clip_trigger_quantization
-        if(quant_value != _Q.q_no_q):
-            self._control_surface.show_message("LAUNCH QUANTIZATION ON: " + str(LAUNCH_QNTZ_NAMES[LAUNCH_QNTZ_RATES.index(quant_value)]))
+    def _get_record_quant_msg(self):
+        rec_quant_value = self._get_song().midi_recording_quantization
+        if(self._record_quantization_on):
+            return str(REC_QNTZ_NAMES[REC_QNTZ_RATES.index(rec_quant_value)])
         else: 
-            self._control_surface.show_message("LAUNCH QUANTIZATION OFF")
+            return "OFF"
+   
+    def _on_clip_trigger_quantization_changed_in_live(self):
+        launch_quant_value = self._get_song().clip_trigger_quantization
+        quant_on = launch_quant_value !=_Q.q_no_q
+        if quant_on:
+            self._launch_quantization = launch_quant_value
+        self._launch_quantization_on = quant_on        
+
+        self._control_surface.show_message("LAUNCH QUANTIZATION " + self._get_launch_quant_msg()) 
         self.update() 
+    
+    def _get_launch_quant_msg(self):
+        if(self._launch_quantization_on):
+            return ("ON: " + str(LAUNCH_QNTZ_NAMES[LAUNCH_QNTZ_RATES.index(self._launch_quantization)]))
+        else: 
+            return ("OFF")
     
 # DOUBLE button and its listener
     def _set_double_button(self, button=None):
@@ -842,11 +850,10 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             else:
                 self._record_button.turn_off()
 
-
 # STOP TRACK button and its listener
     def _update_stop_track_clip_buttons(self):
         #for line in traceback.format_stack():
-        #    Live.Base.log(line.strip())
+        #Live.Base.log(line.strip())
         #Live.Base.log("SpecialProSessionComponent _update_stop_track_clip_buttons: " + str(self.is_enabled()))
         if self.is_enabled():
             for index in xrange(self._num_tracks):
@@ -907,45 +914,49 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                     self._update_fixed_lenght_leds(index)            
                 elif(self._shift_pressed):
                     self._update_clip_trigger_leds(index)            
-            
          
     def _update_clip_trigger_leds(self, index):
         #Live.Base.log("SpecialProSessionComponent _update_clip_trigger_leds: " + str(index))
         button = self._stop_track_clip_buttons[index]
         if(index==0):
-            if(self._get_song().clip_trigger_quantization == _Q.q_no_q):
+            if(self._launch_quantization_on):
                 button.send_value("LaunchQuant.On")
             else:
                 button.send_value("LaunchQuant.Off")  
         elif(index==1):
-            if(self._get_song().clip_trigger_quantization != _Q.q_no_q):
+            if((self._get_song().clip_trigger_quantization != _Q.q_8_bars)and self._launch_quantization_on):
                 button.send_value("ProSession.On")
             else:
                 button.send_value("ProSession.Off")
         elif(index==2):
-            if(self._get_song().clip_trigger_quantization != _Q.q_thirtytwoth):
+            if((self._get_song().clip_trigger_quantization != _Q.q_thirtytwoth) and self._launch_quantization_on):
                 button.send_value("ProSession.On")
             else:
                 button.send_value("ProSession.Off")
         else:
-            quant_value = self._get_song().clip_trigger_quantization
-                
-            if(quant_value in LAUNCH_QNTZ_FIXED_RATES):
-                quant_idx = LAUNCH_QNTZ_FIXED_RATES.index(quant_value)
-                #LaunchQuant values 2 Bars, 1 bar, 1/4, 1/8, 1/16
+            if(self._launch_quantization_on):
+                launch_quant_value = self._get_song().clip_trigger_quantization
+                sendValue = "LaunchQuant.Value.On"
+            else:
+                launch_quant_value = self._record_quantization    
+                sendValue = "LaunchQuant.Value.Idle" 
+                                
+            if(launch_quant_value in LAUNCH_QNTZ_FIXED_RATES):
+                quant_idx = LAUNCH_QNTZ_FIXED_RATES.index(launch_quant_value)
+                #LaunchQuant values 8 Bars, 4 Bars, 2 Bars, 1 Bar, 1/2, 1/2t, 1/4, 1/4t, 1/8, 1/8t, 1/16, 1/16t, 1/32
                 if((index-3) == quant_idx):
-                    button.send_value("LaunchQuant.Value.On")
+                    button.send_value(sendValue)
                 else:
                     button.send_value("LaunchQuant.Value.Off")
             else:
-                button.send_value("LaunchQuant.Value.Off")            
-               
+                button.send_value("LaunchQuant.Value.Off")    
+                
     def _update_rec_qntz_leds(self, index):
         #Live.Base.log("SpecialProSessionComponent _update_rec_qntz_leds: " + str(index))
         button = self._stop_track_clip_buttons[index]
         if(index==0):
             if(self._record_quantization_on):
-                button.send_value("RecQuant.On")
+                button.send_value("RecQuant.On") 
             else:
                 button.send_value("RecQuant.Off")  
         elif(index==1):
@@ -960,14 +971,14 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 button.send_value("ProSession.Off")
         else:
             if(self._record_quantization_on):
-                quant_value = self._get_song().midi_recording_quantization
+                rec_quant_value = self._get_song().midi_recording_quantization
                 sendValue = "RecQuant.Value.On"
             else:
-                quant_value = self._record_quantization    
+                rec_quant_value = self._record_quantization    
                 sendValue = "RecQuant.Value.Idle"
                 
-            if(quant_value in REC_QNTZ_FIXED_RATES):
-                quant_idx = REC_QNTZ_FIXED_RATES.index(quant_value)
+            if(rec_quant_value in REC_QNTZ_FIXED_RATES):
+                quant_idx = REC_QNTZ_FIXED_RATES.index(rec_quant_value)
                 #RecQuant values 1/4, 1/8, 1/8+t, 1/16, 1/16+t
                 if((index-3) == quant_idx):
                     button.send_value(sendValue)
@@ -1062,13 +1073,14 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         if value is not 0 or not button.is_momentary():
             index = list(self._stop_track_clip_buttons).index(button)
             if(index==0):
-                self.song().clip_trigger_quantization = _Q.q_no_q    
+                self._launch_quantization_on = not self._launch_quantization_on
+                self.song().clip_trigger_quantization = self._launch_quantization if self._launch_quantization_on else _Q.q_no_q    
             elif(index==1):
                 self._decrement_launch_qntz_value()
             elif(index==2):
                 self._increment_launch_qntz_value()
             else:
-                self.song().clip_trigger_quantization = LAUNCH_QNTZ_FIXED_RATES[index-3]                   
+                self.song().clip_trigger_quantization = LAUNCH_QNTZ_FIXED_RATES[index-3]
                                                
             
     def _do_arm_track(self, value, button):        

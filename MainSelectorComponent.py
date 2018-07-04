@@ -263,7 +263,10 @@ class MainSelectorComponent(ModeSelectorComponent):
 
             if self._main_mode_index == 0:
                 # session
-                self._control_surface.show_message("SESSION MODE" )
+                if(self._pro_session_on):
+                    self._control_surface.show_message("PRO SESSION MODE")
+                else:
+                    self._control_surface.show_message("SESSION MODE")
                 self._setup_mixer(not as_active)
                 self._setup_device_controller(not as_active)
                 self._setup_step_sequencer(not as_active)
