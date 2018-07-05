@@ -531,7 +531,7 @@ class InstrumentControllerComponent(CompoundComponent):
                 #button.force_next_send()
 
             if self._scales.is_drumrack:
-                Live.Base.log("InstrumentControllerComponent - OCTAVE: " + str(self._scales._octave))
+                #Live.Base.log("InstrumentControllerComponent - OCTAVE: " + str(self._scales._octave))
                 
                 for button, (x, y) in self._matrix.iterbuttons():
                     if button:

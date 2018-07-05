@@ -613,7 +613,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                     self.song().midi_recording_quantization = self._record_quantization if self._record_quantization_on else Rec_Q.rec_q_no_q                    
             else:    
                 if ((value is not 0) or (not sender.is_momentary())):
-                    self._control_surface.show_message("QUANTIZE CLIP [SET REC QUANTIZATION]?")
+                    self._control_surface.show_message("QUANTIZE CLIP [SET REC QUANTIZATION -> NOW "+ self._get_record_quant_msg() +" ]?")
                     self._quantize_pressed = True
                 else:
                     self._quantize_pressed = False
@@ -647,22 +647,18 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 self.song().midi_recording_quantization = REC_QNTZ_RATES[quant_idx-1]
     
     def _on_record_quantization_changed_in_live(self):
-        #Live.Base.log("SpecialProSessionComponent _on_record_quantization_changed_in_live") 
         rec_quant_value = self._get_song().midi_recording_quantization
         quant_on = rec_quant_value !=Rec_Q.rec_q_no_q
         if quant_on:
             self._record_quantization = rec_quant_value
         self._record_quantization_on = quant_on
-        if(self._record_quantization_on):
-            self._control_surface.show_message("RECORD QUANTIZATION ON: " + self._get_record_quant_msg())
-        else: 
-            self._control_surface.show_message("RECORD QUANTIZATION " + self._get_record_quant_msg())
+
+        self._control_surface.show_message("RECORD QUANTIZATION " + self._get_record_quant_msg())
         self.update()
    
     def _get_record_quant_msg(self):
-        rec_quant_value = self._get_song().midi_recording_quantization
         if(self._record_quantization_on):
-            return str(REC_QNTZ_NAMES[REC_QNTZ_RATES.index(rec_quant_value)])
+            return ("ON: " + str(REC_QNTZ_NAMES[REC_QNTZ_RATES.index(self._record_quantization)]))
         else: 
             return "OFF"
    
@@ -680,7 +676,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         if(self._launch_quantization_on):
             return ("ON: " + str(LAUNCH_QNTZ_NAMES[LAUNCH_QNTZ_RATES.index(self._launch_quantization)]))
         else: 
-            return ("OFF")
+            return "OFF"
     
 # DOUBLE button and its listener
     def _set_double_button(self, button=None):
@@ -704,7 +700,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                         self._display_fixed_length_info()
             else:    
                 if ((value is not 0) or (not sender.is_momentary())):
-                    self._control_surface.show_message("DOUBLE MIDI CLIP [SET FIXED LENGHT]?")
+                    self._control_surface.show_message("DOUBLE MIDI CLIP [SET FIXED LENGHT -> NOW "+ self._get_fixed_length_msg() +" ]?")
                     self._double_pressed = True
                 else:
                     self._double_pressed = False
@@ -1053,7 +1049,8 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             elif(index==2):
                 self._increment_fixed_length_value()
             else:
-                self._fixed_length = FIXED_LENGTH_VALUES[index-3]   
+                self._fixed_length = FIXED_LENGTH_VALUES[index-3]
+                self._fixed_length_on = True   
             self._display_fixed_length_info()                       
                 
     def _set_rec_qntz_value(self, value, button):        
@@ -1146,18 +1143,21 @@ class SpecialProSessionComponent(SpecialSessionComponent):
     def _display_fixed_length_info(self):
         """ Displays the current fixed recording length/state in the status bar. """
         if self.is_enabled() and self._is_pro_mode_on():
-            if self._fixed_length_on:
-                tag = ' Bar'
-                if self._fixed_length > 0:
-                    tag = ' Bars'
-                self._control_surface.show_message("FIXED LENGTH: " + str(int(self._get_fixed_length() / self.song().signature_denominator)) + tag)
-            else:
-                self._control_surface.show_message("FIXED LENGTH: OFF")
+            self._control_surface.show_message("FIXED LENGTH: " + self._get_fixed_length_msg())
+                
+                
+    def _get_fixed_length_msg(self):
+        if(self._fixed_length_on):
+            tag = ' Bar'
+            if self._fixed_length > 0:
+                tag = ' Bars'
+            return ("ON: " + str(int((self._get_fixed_length()*(self.song().signature_denominator/4.0)) / self.song().signature_numerator)) + tag)
+        else: 
+            return "OFF"                
 
     def _get_fixed_length(self):
         """ Returns the fixed length to use for recording or creating clips. """
         return 4.0 / self.song().signature_denominator * self.song().signature_numerator * (self._fixed_length + 1)
-
 
     def set_stop_track_clip_buttons(self, buttons):
         if (not self._is_pro_mode_on()) or buttons!=None:
