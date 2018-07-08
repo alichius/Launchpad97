@@ -64,6 +64,27 @@ class Colors:
         # Enabled = Rgb.GREEN
         # Off = Rgb.GREEN_THIRD
 
+    class TapSet:
+        One = Rgb.RED
+        Two = Rgb.MANDARIN
+        Three = Rgb.ORANGE
+        Four = Rgb.AMBER
+        Five = Rgb.YELLOW
+        Six = Rgb.LIME
+        Seven = Rgb.GREEN
+
+    class ShiftSet:
+        #One = Rgb.GREEN_FULL
+        #Two = Rgb.GREEN_HALF
+        #Three = Rgb.GREEN_THIRD
+        #Four = Rgb.BLACK
+        
+        One = Rgb.RED_THIRD
+        Two = Rgb.AMBER_THIRD
+        Three = Rgb.RED_THIRD
+
+
+
     class ProSession:  # session zoomin
         On = Rgb.GREEN
         Off = Rgb.GREEN_THIRD
@@ -98,6 +119,8 @@ class Colors:
             On = Rgb.RED_BLINK
             Off = Rgb.RED_BLINK_THIRD
 
+
+
     class LaunchQuant:
         On = Rgb.ORANGE_BLINK
         Off = Rgb.ORANGE_HALF
@@ -114,6 +137,13 @@ class Colors:
             Idle = Rgb.YELLOW
             Off = Rgb.YELLOW_HALF
 
+    class Metronome:
+        On = Rgb.GREEN_BLINK
+        Off = Rgb.GREEN_FULL
+        Nudge = Rgb.AMBER_FULL
+        DeltaOne = Rgb.RED_THIRD
+        DeltaFive = Rgb.RED_FULL
+        
     class RecQuant:
         On = Rgb.RED_BLINK
         Off = Rgb.RED_FULL

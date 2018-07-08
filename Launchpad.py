@@ -4,6 +4,7 @@ from _Framework.ControlSurface import ControlSurface
 from _Framework.InputControlElement import MIDI_CC_TYPE, MIDI_NOTE_TYPE
 from _Framework.ButtonElement import ButtonElement
 from _Framework.ButtonMatrixElement import ButtonMatrixElement
+from _Framework.Profile import profile
 from ConfigurableButtonElement import ConfigurableButtonElement
 from MainSelectorComponent import MainSelectorComponent
 from NoteRepeatComponent import NoteRepeatComponent
@@ -173,6 +174,12 @@ class Launchpad(ControlSurface):
             if(Settings.STEPSEQ__LINK_WITH_SESSION):
                 self._selector._stepseq.unlink()
             Launchpad._combine_active_instances()
+
+    @profile
+    def update_display(self):
+        super(Launchpad, self).update_display()
+        if self._selector != None:
+            self._selector._update_session_tempo_button()
 
     def refresh_state(self):
         ControlSurface.refresh_state(self)

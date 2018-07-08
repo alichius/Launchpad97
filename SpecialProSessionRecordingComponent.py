@@ -5,7 +5,8 @@ from _Framework.SessionRecordingComponent import SessionRecordingComponent, trac
 
 class SpecialProSessionRecordingComponent(SessionRecordingComponent):
 
-    def __init__(self, target_track_component, *a, **k):
+    def __init__(self, target_track_component, control_surface, *a, **k):
+        self._control_surface = control_surface
         self._target_track_component = target_track_component
         super(SpecialProSessionRecordingComponent, self).__init__(ClipCreator(), True, *a, **k)
         self._is_record_mode = False
@@ -18,7 +19,7 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         self._is_record_mode = record_mode
         
     def _is_fixed_length_on(self):
-        #Live.Base.log("SpecialSessionRecordingComponent - set_record_mode:  " + str(record_mode))
+        #Live.Base.log("SpecialSessionRecordingComponent - _is_fixed_length_on:  " + str(self._parent._is_fixed_length_on()))
         return self._parent._is_fixed_length_on()    
 
     def set_enabled(self, enable):
@@ -32,9 +33,13 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         if self.is_enabled():
             if self._is_record_mode:
                 self._handle_note_mode_record_behavior()
-            elif not self._stop_recording():
-                #Live.Base.log("SpecialSessionRecordingComponent - _start_recording")
-                self._start_recording()
+            else:
+                if not self._stop_recording():
+                    self._control_surface.show_message("SESSION RECORD ON")
+                    self._start_recording()
+                else:
+                    self._control_surface.show_message("SESSION RECORD OFF")
+                    
 
     def _handle_note_mode_record_behavior(self):
         #Live.Base.log("SpecialSessionRecordingComponent - _handle_note_mode_record_behavior")
@@ -43,8 +48,8 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         if self._track_can_record(track): #Track have input and is not master/return
             playing_slot = track_playing_slot(track) #Clip of track is playing
             #Live.Base.log("SpecialSessionRecordingComponent - playing_slot: " + str(playing_slot))
-            should_overdub = not track_is_recording(track) and playing_slot != None # IS PLAYING BUT NOT RECORDING
-            if should_overdub:
+            # IS PLAYING BUT NOT RECORDING
+            if self._should_overdub(track):
                 #Live.Base.log("SpecialSessionRecordingComponent - should_overdub")
                 self.song().overdub = True
                 playing_slot.fire()
@@ -58,6 +63,15 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         elif not self._stop_recording():
             #Live.Base.log("SpecialSessionRecordingComponent - _handle_note_mode_record_behavior._start_recording")
             self._start_recording()
+
+    def _should_overdub(self, track):
+            playing_slot = track_playing_slot(track) #Clip of track is playing
+            if(not track_is_recording(track) and playing_slot != None):
+                clip = playing_slot.clip
+                return clip and clip.is_midi_clip
+            return False
+            
+            
 
     def _prepare_new_slot(self, track):
         song = self.song()

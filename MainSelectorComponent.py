@@ -613,3 +613,7 @@ class MainSelectorComponent(ModeSelectorComponent):
         for button in self._all_buttons:
             button.set_channel(new_channel)
             button.force_next_send()
+
+    def _update_session_tempo_button(self):
+        if self._session != None:
+            self._session._update_session_tempo_button()

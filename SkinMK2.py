@@ -60,6 +60,24 @@ class Colors:
         #Enabled = Rgb.GREEN
         #Off = Rgb.GREEN_THIRD
 
+    class TapSet:
+        One = Rgb.RED
+        Two = Rgb.BLUE
+        Three = Rgb.MINT
+        Four = Rgb.AMBER
+        Five = Rgb.PURPLE
+        Six = Rgb.YELLOW
+        Seven = Rgb.GREEN        
+
+
+    class ShiftSet:
+        One = Rgb.RED_HALF
+        Two = Rgb.BLUE_HALF
+        Three = Rgb.ORANGE_HALF
+        Four = Rgb.AMBER_HALF
+        Five = Rgb.YELLOW_HALF
+
+
     class ProSession:
         On = Rgb.BLUE
         Off = Rgb.BLACK
@@ -110,6 +128,13 @@ class Colors:
             Idle = Rgb.YELLOW
             Off = Rgb.YELLOW_HALF        
 
+    class Metronome:
+        On = Rgb.GREEN_BLINK
+        Off = Rgb.GREEN
+        Nudge = Rgb.BLUE
+        DeltaOne = Rgb.RED_THIRD
+        DeltaFive = Rgb.RED
+
     class RecQuant:
         On = Rgb.YELLOW_BLINK
         Off = Rgb.YELLOW
@@ -123,7 +148,7 @@ class Colors:
         Stopped = Rgb.RED
         Playing = Rgb.GREEN
         Empty = Rgb.BLACK
-
+        
     class Mixer:
         class Arm:
             On = Rgb.RED
