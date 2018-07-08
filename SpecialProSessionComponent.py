@@ -62,7 +62,11 @@ _Q.q_sixtenth
 LAUNCH_QNTZ_NAMES = ('8 Bars', '4 Bars', '2 Bars', '1 Bar', '1/2', '1/2t', '1/4', '1/4t', '1/8', '1/8t', '1/16', '1/16t', '1/32')
 LAUNCH_QNTZ_RATES_LEN = len(LAUNCH_QNTZ_RATES)
 
-FIXED_LENGTH_VALUES = [0, 1, 3, 7, 15]
+
+
+LENGTH_OPTION_NAMES = ('1 Beat', '1 Bar', '2 Bars', '4 Bars', '8 Bars')
+
+FIXED_LENGTH_VALUES = [0.25, 1, 2, 4, 8]
 MAX_FIXED_LENGTH = 31
 
 TAP_COLORS = ('TapSet.One', 'TapSet.Two', 'TapSet.Three', 'TapSet.Four', 'TapSet.Five', 'TapSet.Six', 'TapSet.Seven',
@@ -125,6 +129,7 @@ class SpecialClipSlotComponent(ClipSlotComponent):
                         view.detail_clip = view.highlighted_clip_slot.clip
                         if start_duplicate:
                             view.highlighted_clip_slot.fire(force_legato=True, launch_quantization=_Q.q_no_q)
+                        self._print('CLIP DUPLICATED')
                     except Live.Base.LimitationError:
                         pass
                     except RuntimeError:
@@ -142,16 +147,17 @@ class SpecialClipSlotComponent(ClipSlotComponent):
             
     def _do_double_loop(self, clip_slot):
         self._do_select_clip(clip_slot)
-        if self._can_duplicate_loop():
+        clip = self.song().view.detail_clip
+        if self._can_duplicate_loop(clip):
             try:
                 self._get_song().view.detail_clip.duplicate_loop()
+                self._print('CLIP LENGHT DOUBLED TO ' + str(clip.length))
             except (AttributeError, TypeError):
                 pass
             except RuntimeError:
                 pass
 
-    def _can_duplicate_loop(self):
-        clip = self.song().view.detail_clip
+    def _can_duplicate_loop(self, clip):
         return clip and clip.is_midi_clip
 
     def _do_quantize_clip(self, clip_slot):
@@ -159,6 +165,13 @@ class SpecialClipSlotComponent(ClipSlotComponent):
         if clip:
             assert isinstance(clip, Live.Clip.Clip)
             clip.quantize(self._get_record_quantization(), 1.0) 
+            
+            self._print('CLIP QUANTIZED TO ' + str(REC_QNTZ_NAMES[REC_QNTZ_RATES.index(self._get_record_quantization())]))
+            
+    def _do_delete_clip(self):
+        if self._clip_slot and self._clip_slot.has_clip:
+            self._clip_slot.delete_clip()
+            self._print('CLIP DELETED')
             
     def _do_track_arm(self):
         if self._clip_slot:
@@ -241,6 +254,9 @@ class SpecialClipSlotComponent(ClipSlotComponent):
     
     def _should_arm(self):
         return self._parent._should_arm()
+    
+    def _print(self, msg):
+        self._parent._print(str(msg)) 
 
     @subject_slot('value')
     def _launch_button_value(self, value):
@@ -262,14 +278,25 @@ class SpecialClipSlotComponent(ClipSlotComponent):
                         #Live.Base.log("SpecialClipSlotComponent _do_duplicate_clip")
                         self._do_duplicate_clip()    
                 elif self._is_folding() and value:
+                    if self._is_shifting():
+                        Live.Base.log("SpecialClipSlotComponent _do_launch_scene")
+                        self._parent._do_launch_scene(value)
+                    else:                    
                     #Live.Base.log("SpecialClipSlotComponent _do_fold_track")
-                    self._do_fold_track(self._clip_slot)                              
+                        self._do_fold_track(self._clip_slot)                              
                 elif self._is_doubling() and value:
+                    if self._is_shifting():
+                        Live.Base.log("SpecialClipSlotComponent _capture_and_insert_scene")
+                        self._parent._do_capture_and_insert_scene()
+                    else:                            
                     #Live.Base.log("SpecialClipSlotComponent _do_double_loop")
-                    self._do_double_loop(self._clip_slot)
+                        self._do_double_loop(self._clip_slot)
                 elif self._is_quantizing() and value:
-                    #Live.Base.log("SpecialClipSlotComponent _do_quantize_clip")
-                    self._do_quantize_clip(self._clip_slot)
+                    if self._is_shifting():
+                        Live.Base.log("SpecialClipSlotComponent _create_silent_scene")
+                        self._parent._do_create_scene()
+                    else:                    
+                        self._do_quantize_clip(self._clip_slot)
                 elif self._is_shifting() and value:
                     #Live.Base.log("SpecialClipSlotComponent _do_select_clip")
                     self._do_select_clip(self._clip_slot)            
@@ -327,16 +354,49 @@ class SpecialSceneComponent(SceneComponent):
     def _is_pro_mode_on(self):
         return self._parent._is_pro_mode_on()
     
+    def _do_delete_scene(self, scene_for_overrides):
+        try:
+            if self._scene:
+                song = self.song()
+                song.delete_scene(list(song.scenes).index(self._scene))
+                self._print('SCENE DELETED')
+        except RuntimeError:
+            pass
+    
     def _do_duplicate_scene(self):
         try:
             song = self._get_song()
             song.duplicate_scene(list(song.scenes).index(self._scene))
+            self._print('SCENE DUPLICATED')
         except Live.Base.LimitationError:
             pass
         except RuntimeError:
             pass
         except IndexError:
             pass
+        
+    def _do_launch_scene(self, value):
+        launched = False
+        if value != 0:
+            self._scene.fire()
+            launched = True
+        if launched and self.song().select_on_launch:
+            self.song().view.selected_scene = self._scene
+
+    def _do_create_scene(self):
+        song = self._get_song()
+        if not self._scene.is_empty:
+            new_scene_index = list(song.scenes).index(self._scene) + 1
+            song.view.selected_scene = song.create_scene(new_scene_index)
+            self._print('CREATED SCENE ' + self.song().view.selected_scene.name)
+
+    def _do_capture_and_insert_scene(self):
+        song = self.song()
+        song.capture_and_insert_scene(Live.Song.CaptureMode.all)
+        self._print('CAPTURED TO SCENE ' + self.song().view.selected_scene.name)
+
+    def _print(self, msg):
+        self._parent._print(str(msg))           
         
 class SpecialProSessionComponent(SpecialSessionComponent):
     scene_component_type = SpecialSceneComponent
@@ -538,16 +598,16 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 if now - self._last_undo_time < LONG_PRESS:
                     if self.song().can_undo:
                         self.song().undo()
-                        self._control_surface.show_message("UNDO")
+                        self._print("UNDO")
                     else:
-                        self._control_surface.show_message("CAN`T UNDO!!") 
+                        self._print("CAN`T UNDO!!") 
 
                 else:
                     if self.song().can_redo:
                         self.song().redo()
-                        self._control_surface.show_message("REDO")
+                        self._print("REDO")
                     else:
-                        self._control_surface.show_message("CAN`T REDO!!") 
+                        self._print("CAN`T REDO!!") 
             self._update_undo_button()                    
 
     def _update_undo_button(self):
@@ -577,7 +637,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         assert (value in range(128))
         if self.is_enabled() and self._is_pro_mode_on() and self._shift_button != None:
             if ((value is not 0) or (not sender.is_momentary())):
-                self._control_surface.show_message("SELECT/VIEW CLIP [SET LAUNCH QUANTIZATION -> NOW "+ self._get_launch_quant_msg() +" ]?")
+                self._print("SELECT/VIEW CLIP [SET LAUNCH QUANTIZATION -> NOW "+ self._get_launch_quant_msg() +" ]?")
                 self._shift_pressed = True
             else:
                 self._shift_pressed = False
@@ -624,17 +684,20 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         assert (value in range(128))
         if self.is_enabled() and self._is_pro_mode_on() and self._click_button != None:
             if ((value is not 0) or (not sender.is_momentary())):
-                self._control_surface.show_message("FOLD/UNFOLD [SET TEMPO]?")
                 self._click_pressed = True
+                if self._shift_pressed:
+                    self._print("LAUNCH SCENE [SET TEMPO]?")
+                else:
+                    self._print("FOLD/UNFOLD TRACK [SET TEMPO]?")
             else:
                 self._click_pressed = False
                 self._tap_button = None
                 if (time.time() - self._last_click_time) < SHORT_PRESS:
                     self.song().metronome = not self.song().metronome
                     if self.song().metronome :
-                        self._control_surface.show_message("METRONOME ON")
+                        self._print("METRONOME ON")
                     else:
-                        self._control_surface.show_message("METRONOME OFF")                
+                        self._print("METRONOME OFF")                
                 self._last_click_time = time.time()     
             self.update()              
             
@@ -691,8 +754,11 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         assert (value in range(128))
         if self.is_enabled() and self._is_pro_mode_on() and self._quantize_button != None:
             if ((value is not 0) or (not sender.is_momentary())):
-                self._control_surface.show_message("QUANTIZE CLIP [SET REC QUANTIZATION -> NOW "+ self._get_record_quant_msg() +" ]?")
                 self._quantize_pressed = True
+                if self._shift_pressed:
+                    self._print("CREATE SCENE [SET REC QUANTIZATION -> NOW "+ self._get_record_quant_msg() +" ]?")
+                else:
+                    self._print("QUANTIZE CLIP [SET REC QUANTIZATION -> NOW "+ self._get_record_quant_msg() +" ]?")
             else:
                 self._quantize_pressed = False
                 if (time.time() - self._last_quantize_time) < SHORT_PRESS:
@@ -735,7 +801,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             self._record_quantization = rec_quant_value
         self._record_quantization_on = quant_on
 
-        self._control_surface.show_message("RECORD QUANTIZATION " + self._get_record_quant_msg())
+        self._print("RECORD QUANTIZATION " + self._get_record_quant_msg())
         self.update()
    
     def _get_record_quant_msg(self):
@@ -751,7 +817,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             self._launch_quantization = launch_quant_value
         self._launch_quantization_on = quant_on        
 
-        self._control_surface.show_message("LAUNCH QUANTIZATION " + self._get_launch_quant_msg()) 
+        self._print("LAUNCH QUANTIZATION " + self._get_launch_quant_msg()) 
         self.update() 
         
     def _on_session_record_changed_in_live(self):
@@ -780,8 +846,11 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         assert (value in range(128))
         if self.is_enabled() and self._is_pro_mode_on() and self._double_button != None:
             if ((value is not 0) or (not sender.is_momentary())):
-                self._control_surface.show_message("DOUBLE MIDI CLIP [SET FIXED LENGHT -> NOW "+ self._get_fixed_length_msg() +" ]?")
                 self._double_pressed = True
+                if self._shift_pressed:
+                    self._print("CAPTURE SCENE [SET FIXED LENGHT -> NOW "+ self._get_fixed_length_msg() +" ]?")
+                else:
+                    self._print("DOUBLE MIDI CLIP [SET FIXED LENGHT -> NOW "+ self._get_fixed_length_msg() +" ]?")
             else:
                 self._double_pressed = False
                 if (time.time() - self._last_fixed_time) < SHORT_PRESS:
@@ -803,13 +872,23 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         #Live.Base.log("SpecialProSessionComponent _increment_rec_qntz_value")
         if(self._fixed_length_on):
             if(self._fixed_length<MAX_FIXED_LENGTH):
-                self._fixed_length += 1
+                if(self._fixed_length==0.25):
+                    self._fixed_length = 0.5
+                elif(self._fixed_length==0.5):
+                    self._fixed_length = 1 
+                else: 
+                    self._fixed_length += 1
 
     def _decrement_fixed_length_value(self):
         #Live.Base.log("SpecialProSessionComponent _decrement_rec_qntz_value")        
         if(self._fixed_length_on):
-            if(self._fixed_length>0):
-                self._fixed_length -= 1               
+            if(self._fixed_length>0.25):
+                if(self._fixed_length==0.5):
+                    self._fixed_length = 0.25 
+                elif(self._fixed_length==1):
+                    self._fixed_length = 0.5
+                else: 
+                    self._fixed_length -= 1               
                 
 # DELETE button and its listener
     def _set_delete_button(self, button=None):
@@ -830,9 +909,9 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             if ((value is not 0) or (not sender.is_momentary())):
                 self._delete_pressed = True
                 if self._shift_pressed:
-                    self._control_surface.show_message("DELETE SCENE?")
+                    self._print("DELETE SCENE?")
                 else:
-                    self._control_surface.show_message("DELETE CLIP [MUTE TRACK]?")
+                    self._print("DELETE CLIP [MUTE TRACK]?")
             else:
                 self._delete_pressed = False
                 if (time.time() - self._last_mute_time) < SHORT_PRESS:
@@ -870,9 +949,9 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             if ((value is not 0) or (not sender.is_momentary())):
                 self._duplicate_pressed = True
                 if self._shift_pressed:
-                    self._control_surface.show_message("DUPLICATE SCENE?")
+                    self._print("DUPLICATE SCENE?")
                 else:
-                    self._control_surface.show_message("DUPLICATE CLIP [SOLO TRACK]?")
+                    self._print("DUPLICATE CLIP [SOLO TRACK]?")
             else:
                 self._duplicate_pressed = False
                 if (time.time() - self._last_solo_time) < SHORT_PRESS:
@@ -912,14 +991,14 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                     self._record_mode_on = not self._record_mode_on
                     self._session_record.set_record_mode(self._record_mode_on)
                     if(self._record_mode_on):
-                        self._control_surface.show_message("AUTORECORD ON")
+                        self._print("AUTORECORD ON")
                     else:
-                        self._control_surface.show_message("AUTORECORD OFF")
+                        self._print("AUTORECORD OFF")
             else:
                 if ((value is not 0) or (not sender.is_momentary())):
                     self._record_pressed = True
                     self._last_record_time = time.time()
-                    self._control_surface.show_message("REC CLIP [ARM TRACK]?")
+                    self._print("REC CLIP [ARM TRACK]?")
                 else:
                     self._record_pressed = False
                     if (time.time() - self._last_record_time) < LONG_PRESS:
@@ -948,10 +1027,10 @@ class SpecialProSessionComponent(SpecialSessionComponent):
     def _update_stop_track_clip_buttons(self):
         self._tap_button = None
         if self.is_enabled():
+            for index in xrange(8):
+                self._update_select_leds(index)  
             for index in xrange(self._num_tracks):
                 self._update_stop_clips_led(index)
-            for index in xrange(8):
-                self._update_select_leds(index)                
 
     def _update_stop_clips_led(self, index):
         #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led index: " + str(index) + " / " + str(self._stop_track_clip_buttons))
@@ -984,14 +1063,15 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                     else:
                         button.send_value("TrackController.Mute.On")  
                 else:
-                    #Live.Base.log("SpecialProSessionComponent No pressed (STOP): " + str(index))
-                    if track.fired_slot_index == -2:
-                        button.send_value(self._stop_clip_triggered_value)
-                    elif track.playing_slot_index >= 0:
-                        button.send_value(self._stop_clip_value)
-                    else:
-                        #Live.Base.log("SpecialProSessionComponent button.turn_off(): " + str(index))
-                        button.turn_off()
+                    if not (self._quantize_pressed or self._click_pressed or self._double_pressed or self._shift_pressed):
+                        #Live.Base.log("SpecialProSessionComponent No pressed (STOP): " + str(index))
+                        if track.fired_slot_index == -2:
+                            button.send_value(self._stop_clip_triggered_value)
+                        elif track.playing_slot_index >= 0:
+                            button.send_value(self._stop_clip_value)
+                        else:
+                            #Live.Base.log("SpecialProSessionComponent button.turn_off(): " + str(index))
+                            button.turn_off()
             else:
                 #Live.Base.log("SpecialProSessionComponent button.send_value(4): " + str(index))
                 button.send_value(4)
@@ -1089,15 +1169,15 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 button.send_value("Metronome.On")
             else:
                 button.send_value("Metronome.Off")  
-        elif(index==1):
-            self._tap_button = button
-        elif(index==2 or index==3):
+        elif(index==1 or index==2):
             button.send_value("Metronome.Nudge")
-        elif(index==4 or index==7):
+        elif(index==3 or index==6):
             button.send_value("Metronome.DeltaFive")
-        elif(index==5 or index==6):
+        elif(index==4 or index==5):
             button.send_value("Metronome.DeltaOne")              
-                    
+        elif(index==7):
+            self._tap_button = button      
+            
     def _update_fixed_lenght_leds(self, index):
         #Live.Base.log("SpecialProSessionComponent _update_fixed_lenght_leds: " + str(index))
         button = self._stop_track_clip_buttons[index]
@@ -1107,19 +1187,19 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             else:
                 button.send_value("FixedLenght.Off")  
         elif(index==1):
-            if(self._fixed_length != 0 and self._fixed_length_on):
+            if(self._fixed_length > 0.25 and self._fixed_length_on):
                 button.send_value("ProSession.On")
             else:
                 button.send_value("ProSession.Off")
         elif(index==2):
-            if(self._fixed_length != 31 and self._fixed_length_on):
+            if(self._fixed_length <= 31 and self._fixed_length_on):
                 button.send_value("ProSession.On")
             else:
                 button.send_value("ProSession.Off")
         else:
             if(self._fixed_length in FIXED_LENGTH_VALUES):
                 fl_idx = FIXED_LENGTH_VALUES.index(self._fixed_length)
-                #Fixed Lenght values 1, 2, 4, 8, 16
+                #Fixed Lenght values 0.25, 1, 2, 4, 8
                 if((index-3) == fl_idx):
                     if(self._fixed_length_on):
                         button.send_value("FixedLenght.Value.On")
@@ -1160,21 +1240,21 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         index = list(self._stop_track_clip_buttons).index(button)
         if(index==0 and (value is not 0 or not button.is_momentary())):
             self.song().metronome = not self.song().metronome
-        elif(index==1 and (value is not 0 or not button.is_momentary())):
-            self._tap_tempo_value(value)
-        elif(index==2):
+        elif(index==1):
             self._nudge_down(value)
-        elif(index==3):
+        elif(index==2):
             self._nudge_up(value)
-        elif(index==4 and (value is not 0 or not button.is_momentary())):
+        elif(index==3 and (value is not 0 or not button.is_momentary())):
             self._change_tempo(-5)
-        elif(index==5 and (value is not 0 or not button.is_momentary())):
+        elif(index==4 and (value is not 0 or not button.is_momentary())):
             self._change_tempo(-1)
-        elif(index==6 and (value is not 0 or not button.is_momentary())):
+        elif(index==5 and (value is not 0 or not button.is_momentary())):
             self._change_tempo(1)        
-        elif(index==7 and (value is not 0 or not button.is_momentary())):
+        elif(index==6 and (value is not 0 or not button.is_momentary())):
             self._change_tempo(5)                                                         
-            
+        elif(index==7 and (value is not 0 or not button.is_momentary())):
+            self._tap_tempo_value(value)
+                        
     def _set_fixed_lenght_value(self, value, button):        
         if value is not 0 or not button.is_momentary():
             index = list(self._stop_track_clip_buttons).index(button)
@@ -1276,25 +1356,37 @@ class SpecialProSessionComponent(SpecialSessionComponent):
     def _display_fixed_length_info(self):
         """ Displays the current fixed recording length/state in the status bar. """
         if self.is_enabled() and self._is_pro_mode_on():
-            self._control_surface.show_message("FIXED LENGTH: " + self._get_fixed_length_msg())
+            self._print("FIXED LENGTH: " + self._get_fixed_length_msg())
                 
     def _get_fixed_length_msg(self):
         if(self._fixed_length_on):
-            tag = ' Bar'
-            if self._fixed_length > 0:
-                tag = ' Bars'
-            return ("ON: " + str(int((self._get_fixed_length()*(self.song().signature_denominator/4.0)) / self.song().signature_numerator)) + tag)
+            Live.Base.log("_get_fixed_length - signature_denominator " + str(self.song().signature_denominator))
+            Live.Base.log("_get_fixed_length - signature_numerator " + str(self.song().signature_numerator))
+            Live.Base.log("_get_fixed_length - _fixed_length " + str(self._fixed_length))
+            Live.Base.log("_get_fixed_length - function " + str(self._get_fixed_length()))
+            if self._fixed_length == 0.25:
+                return ("ON: 1 Beat")
+            elif self._fixed_length == 0.5:
+                return ("ON: 2 Beats")   
+            elif self._fixed_length == 1:
+                return ("ON: 1 Bar")  
+            else:
+                return ("ON: " + str(int((self._get_fixed_length()*(self.song().signature_denominator/4.0)) / self.song().signature_numerator)) + ' Bars')
         else: 
             return "OFF"                
 
     def _get_fixed_length(self):
         """ Returns the fixed length to use for recording or creating clips. """
-        return 4.0 / self.song().signature_denominator * self.song().signature_numerator * (self._fixed_length + 1)
+        return 4.0 / self.song().signature_denominator * self.song().signature_numerator * (self._fixed_length)
 
     def set_stop_track_clip_buttons(self, buttons):
         if (not self._is_pro_mode_on()) or buttons!=None:
             #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led super: " + str(index))
             super(SpecialSessionComponent, self).set_stop_track_clip_buttons(buttons)
+            
+    def _print(self, msg):
+        if self._control_surface!=None:
+            self._control_surface.show_message(str(msg))
             
     def _update_session_tempo_button(self):
         if self.is_enabled() and self._is_pro_mode_on():
