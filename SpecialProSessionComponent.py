@@ -69,12 +69,12 @@ LENGTH_OPTION_NAMES = ('1 Beat', '1 Bar', '2 Bars', '4 Bars', '8 Bars')
 FIXED_LENGTH_VALUES = [0.25, 1, 2, 4, 8]
 MAX_FIXED_LENGTH = 31
 
-TAP_COLORS = ('TapSet.One', 'TapSet.Two', 'TapSet.Three', 'TapSet.Four', 'TapSet.Five', 'TapSet.Six', 'TapSet.Seven',
+SHIFT_COLORS = ('TapSet.One', 'TapSet.Two', 'TapSet.Three', 'TapSet.Four', 'TapSet.Five', 'TapSet.Six', 'TapSet.Seven',
                 'TapSet.Six', 'TapSet.Five', 'TapSet.Four', 'TapSet.Three', 'TapSet.Two')
-TAP_COLORS_LEN = len(TAP_COLORS)
-
-SHIFT_COLORS = ('ShiftSet.One', 'ShiftSet.Two', 'ShiftSet.Three', 'ShiftSet.Two')
 SHIFT_COLORS_LEN = len(SHIFT_COLORS)
+
+TAP_COLORS = ('ShiftSet.One', 'ShiftSet.Two', 'ShiftSet.Three', 'ShiftSet.Two')
+TAP_COLORS_LEN = len(TAP_COLORS)
 
 LONG_PRESS = 0.5
 SHORT_PRESS = 0.25
@@ -94,22 +94,43 @@ class SpecialClipSlotComponent(ClipSlotComponent):
             clip = clip_slot.clip
             
             if not self.application().view.is_view_visible('Detail'):
-                #Live.Base.log("SpecialClipSlotComponent _do_select_clip")
+                #Live.Base.log("SpecialClipSlotComponent _do_select_clip first Detail")
                 self.application().view.show_view('Detail')
                 self.device = True
             
             if clip:
-                if not self.application().view.is_view_visible('Detail/Clip') and self.device:
-                    #Live.Base.log("SpecialClipSlotComponent _do_select_clip clip")
+                if not self.application().view.is_view_visible('Detail/Clip') and self.device and self._isSelecting():
+                    #Live.Base.log("SpecialClipSlotComponent _do_select_clip show_view clip")
                     self.application().view.show_view('Detail/Clip')
             else:
                 self.device = False
                     
-            if not self.application().view.is_view_visible('Detail/DeviceChain') and not self.device and not self._is_doubling():
-                #Live.Base.log("SpecialClipSlotComponent _do_select_clip device")
+            if not self.application().view.is_view_visible('Detail/DeviceChain') and not self.device and self._isSelecting():
+                #Live.Base.log("SpecialClipSlotComponent _do_select_clip  show_view device")
                 self.application().view.show_view('Detail/DeviceChain')            
             
             self.device = not self.device    
+
+    def _isSelecting(self):
+        if not self._is_shifting():
+            return False
+        
+        if self._is_folding():
+            return False
+
+        if self._is_quantizing():
+            return False
+        
+        if self._is_doubling():
+            return False
+    
+        if self._is_deleting():
+            return False
+    
+        if self._is_duplicating():
+            return False
+
+        return True
 
     def _do_duplicate_clip(self):
         if self._clip_slot:
@@ -161,8 +182,8 @@ class SpecialClipSlotComponent(ClipSlotComponent):
         return clip and clip.is_midi_clip
 
     def _do_quantize_clip(self, clip_slot):
-        clip = clip_slot.clip
-        if clip:
+        if self._clip_slot and self._clip_slot.has_clip:
+            clip = clip_slot.clip
             assert isinstance(clip, Live.Clip.Clip)
             clip.quantize(self._get_record_quantization(), 1.0) 
             
@@ -185,45 +206,61 @@ class SpecialClipSlotComponent(ClipSlotComponent):
                 track.arm = True
                 if self._get_song().view.selected_track != track:
                     self._get_song().view.selected_track = track
-            if not self._get_song().session_record and self._clip_slot.has_clip:
-                self._get_song().session_record = True            
-
+            if self._clip_slot.has_clip:
+                self._get_song().session_record = not self._get_song().session_record
+     
     def _do_launch_clip(self, value):
-        #Live.Base.log("SpecialClipSlotComponent _do_launch_clip")
-        button = self._launch_button_value.subject # MATRIX BUTTON
-        object_to_launch = self._clip_slot # BUTTON SLOT
-        launch_pressed = value or not button.is_momentary() # LAUNCH MSG
-        
-        if self.has_clip(): #Have CLIP
-            #Live.Base.log("SpecialClipSlotComponent has_clip")
-            object_to_launch = self._clip_slot.clip
-        else:
-            self._has_fired_slot = True
+        if(not self._is_fixed_length_on()):
+            super(SpecialClipSlotComponent, self)._do_launch_clip(value)
+        else:     
+            Live.Base.log("SpecialClipSlotComponent _do_launch_clip FIXED")
+            button = self._launch_button_value.subject # MATRIX BUTTON
+            launch_pressed = value or not button.is_momentary() # LAUNCH MSG
+            quant = self._get_launch_quant()        
+            if not self.has_clip(): #Have CLIP
+                Live.Base.log("SpecialClipSlotComponent _do_launch_clip FIXED empty slot")
+                self._has_fired_slot = True
             
-        if button.is_momentary():
-            if(self._is_fixed_length_on() and not self.has_clip()):
-                #Live.Base.log("SpecialClipSlotComponent fire _get_fixed_length")
-                object_to_launch.fire(record_length=self._get_fixed_length())
-            else:
-                #Live.Base.log("SpecialClipSlotComponent set_fire_button_state")
-                object_to_launch.set_fire_button_state(value != 0)
-        elif launch_pressed:
-            if(self._is_fixed_length_on() and  self.has_clip()):
-                #Live.Base.log("SpecialClipSlotComponent fire _get_fixed_length")
-                object_to_launch.fire(record_length=self._get_fixed_length())
-            else:
-                #Live.Base.log("SpecialClipSlotComponent fire")
-                object_to_launch.fire()    
-        if launch_pressed and self.song().select_on_launch:
-            #Live.Base.log("SpecialClipSlotComponent select_on_launch")
-            self.song().view.highlighted_clip_slot = self._clip_slot
-            self.application().view.show_view('Detail/Clip')
+            if button.is_momentary():
+                if(not self.has_clip()):
+                    Live.Base.log("_do_launch_clip FIXED EMPTY SLOT")
+                    self._clip_slot.fire(record_length=self._get_fixed_length(), launch_quantization=quant)
+                else:
+                    Live.Base.log("_do_launch_clip FIXED CLIP SLOT")
+                    self._clip_slot.clip.set_fire_button_state(value != 0)
+            elif launch_pressed:
+                if(not self.has_clip()):
+                    #Live.Base.log("_do_launch_clip launch_pressed" + str(self._get_fixed_length()))
+                    self._clip_slot.fire(record_length=self._get_fixed_length(), launch_quantization=quant)
+                else:
+                    self._clip_slot.fire()
+            if launch_pressed and self.song().select_on_launch:
+                #Live.Base.log("SpecialClipSlotComponent select_on_launch")
+                self.song().view.highlighted_clip_slot = self._clip_slot
+                self.application().view.show_view('Detail/Clip')
+
+    def _feedback_value(self):
+        ret = super(SpecialClipSlotComponent, self)._feedback_value()
+        if self._clip_slot and ret == 'ProSession.ClipStopped':
+            track = self._clip_slot.canonical_parent
+            if track.is_foldable:
+                if track.fold_state == 0:
+                    return 'ProSession.ClipUnFoldedTrack'
+                else:
+                    return 'ProSession.ClipFoldedTrack'
+        return ret
+
+    def _is_shifting(self):
+        return self._parent._is_shifting()
 
     def _is_folding(self):
         return self._parent._is_folding()
 
-    def _is_shifting(self):
-        return self._parent._is_shifting()
+    def _is_quantizing(self):
+        return self._parent._is_quantizing()
+        
+    def _is_doubling(self):
+        return self._parent._is_doubling()  
     
     def _is_deleting(self):
         return self._parent._is_deleting()
@@ -231,12 +268,6 @@ class SpecialClipSlotComponent(ClipSlotComponent):
     def _is_duplicating(self):
         return self._parent._is_duplicating()
         
-    def _is_doubling(self):
-        return self._parent._is_doubling()
-    
-    def _is_quantizing(self):
-        return self._parent._is_quantizing()  
-    
     def _get_song(self):
         return self._parent._get_song()
     
@@ -245,6 +276,9 @@ class SpecialClipSlotComponent(ClipSlotComponent):
     
     def _is_fixed_length_on(self):
         return self._parent._is_fixed_length_on()
+
+    def _get_launch_quant(self):
+        return self._parent._get_launch_quant()
         
     def _get_fixed_length(self):
         return self._parent._get_fixed_length()
@@ -262,7 +296,7 @@ class SpecialClipSlotComponent(ClipSlotComponent):
     def _launch_button_value(self, value):
         if self._is_pro_mode_on():
         
-            if self.is_enabled() and self._clip_slot is not None:
+            if self.is_enabled():
                 if self._is_deleting() and value:
                     if self._is_shifting():
                         #Live.Base.log("SpecialClipSlotComponent _do_delete_scene")
@@ -279,21 +313,21 @@ class SpecialClipSlotComponent(ClipSlotComponent):
                         self._do_duplicate_clip()    
                 elif self._is_folding() and value:
                     if self._is_shifting():
-                        Live.Base.log("SpecialClipSlotComponent _do_launch_scene")
+                        #Live.Base.log("SpecialClipSlotComponent _do_launch_scene")
                         self._parent._do_launch_scene(value)
                     else:                    
                     #Live.Base.log("SpecialClipSlotComponent _do_fold_track")
                         self._do_fold_track(self._clip_slot)                              
                 elif self._is_doubling() and value:
                     if self._is_shifting():
-                        Live.Base.log("SpecialClipSlotComponent _capture_and_insert_scene")
+                        #Live.Base.log("SpecialClipSlotComponent _capture_and_insert_scene")
                         self._parent._do_capture_and_insert_scene()
                     else:                            
                     #Live.Base.log("SpecialClipSlotComponent _do_double_loop")
                         self._do_double_loop(self._clip_slot)
                 elif self._is_quantizing() and value:
                     if self._is_shifting():
-                        Live.Base.log("SpecialClipSlotComponent _create_silent_scene")
+                        #Live.Base.log("SpecialClipSlotComponent _create_silent_scene")
                         self._parent._do_create_scene()
                     else:                    
                         self._do_quantize_clip(self._clip_slot)
@@ -351,6 +385,9 @@ class SpecialSceneComponent(SceneComponent):
     def _get_fixed_length(self):
         return self._parent._get_fixed_length()
     
+    def _get_launch_quant(self):
+        return self._parent._get_launch_quant()    
+    
     def _is_pro_mode_on(self):
         return self._parent._is_pro_mode_on()
     
@@ -384,17 +421,31 @@ class SpecialSceneComponent(SceneComponent):
             self.song().view.selected_scene = self._scene
 
     def _do_create_scene(self):
-        song = self._get_song()
-        if not self._scene.is_empty:
+        try:
+            song = self._get_song()
             new_scene_index = list(song.scenes).index(self._scene) + 1
             song.view.selected_scene = song.create_scene(new_scene_index)
             self._print('CREATED SCENE ' + self.song().view.selected_scene.name)
-
+        except Live.Base.LimitationError:
+            pass
+        except RuntimeError:
+            pass
+        except IndexError:
+            pass
+        
     def _do_capture_and_insert_scene(self):
-        song = self.song()
-        song.capture_and_insert_scene(Live.Song.CaptureMode.all)
-        self._print('CAPTURED TO SCENE ' + self.song().view.selected_scene.name)
-
+        try:
+            song = self.song()
+            song.view.selected_scene = self._scene
+            song.capture_and_insert_scene(Live.Song.CaptureMode.all)
+            self._print('CAPTURED TO SCENE ' + self.song().view.selected_scene.name)
+        except Live.Base.LimitationError:
+            pass
+        except RuntimeError:
+            pass
+        except IndexError:
+            pass
+        
     def _print(self, msg):
         self._parent._print(str(msg))           
         
@@ -409,7 +460,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             #use custom clip colour coding : blink and pulse for trig and play 
             SceneComponent.clip_slot_component_type = ClipSlotMK2
         SpecialSessionComponent.__init__(self, num_tracks = num_tracks, num_scenes = num_scenes, stop_clip_buttons = stop_clip_buttons, control_surface= control_surface, main_selector= main_selector)
-
+        
         self._side_buttons = side_buttons
         self._osd = None
         self._song = livesong
@@ -431,7 +482,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._click_pressed = False
         self._record_pressed = False
         self._record_mode_on = False
-        
+        self._armed_track_count=0
         
         self._last_undo_time = time.time()
         self._last_shift_time = time.time()
@@ -454,9 +505,9 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._song.add_midi_recording_quantization_listener(self._on_record_quantization_changed_in_live)
         
         
-        self.song().add_session_record_status_listener(self._on_session_record_changed_in_live)
+        self.song().add_session_record_listener(self._on_session_record_changed_in_live)
         
-        self._fixed_length = 0
+        self._fixed_length = 1
         self._fixed_length_on = False
         
         self._tap_color_index = 0
@@ -501,9 +552,9 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self.update()
         
     def disconnect(self):
-        self._song.remove_midi_recording_quantization_listener(self._on_record_quantization_changed_in_live)
         self._song.remove_clip_trigger_quantization_listener(self._on_clip_trigger_quantization_changed_in_live)
-        self.song().remove_session_record_status_listener(self._on_session_record_changed_in_live)
+        self._song.remove_midi_recording_quantization_listener(self._on_record_quantization_changed_in_live)
+        self.song().remove_session_record_listener(self._on_session_record_changed_in_live)
         self._end_undo_step_task.kill()
         self._end_undo_step_task = None
         self._record_quantization_on = False
@@ -549,7 +600,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
     def _is_fixed_length_on(self):
         #Live.Base.log("SpecialProSessionComponent _is_fixed_length_on: " + str(self._fixed_length_on))
         return self._fixed_length_on
-    
+
     def _should_arm(self):
         #Live.Base.log("SpecialProSessionComponent _should_arm: " + str(self._record_pressed or self._record_mode_on))
         return self._record_pressed or self._record_mode_on
@@ -643,6 +694,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 self._shift_pressed = False
                 if (time.time() - self._last_shift_time) < SHORT_PRESS:
                     self.application().view.hide_view('Detail')
+                    #Live.Base.log("SpecialProSessionComponent view.hide_view")
                 self._last_shift_time = time.time()
             self.update()
             
@@ -848,9 +900,9 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             if ((value is not 0) or (not sender.is_momentary())):
                 self._double_pressed = True
                 if self._shift_pressed:
-                    self._print("CAPTURE SCENE [SET FIXED LENGHT -> NOW "+ self._get_fixed_length_msg() +" ]?")
+                    self._print("CAPTURE SCENE [SET FIXED LENGTH -> NOW "+ self._get_fixed_length_msg() +" ]?")
                 else:
-                    self._print("DOUBLE MIDI CLIP [SET FIXED LENGHT -> NOW "+ self._get_fixed_length_msg() +" ]?")
+                    self._print("DOUBLE MIDI CLIP [SET FIXED LENGTH -> NOW "+ self._get_fixed_length_msg() +" ]?")
             else:
                 self._double_pressed = False
                 if (time.time() - self._last_fixed_time) < SHORT_PRESS:
@@ -1002,7 +1054,9 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 else:
                     self._record_pressed = False
                     if (time.time() - self._last_record_time) < LONG_PRESS:
+                        #Live.Base.log("SpecialProSessionComponent self._session_record._on_record_button_value()")
                         self._session_record._on_record_button_value()
+                    self._armed_track_count=0
             self.update()
 
     def _update_record_button(self):
@@ -1112,9 +1166,9 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 launch_quant_value = self._get_song().clip_trigger_quantization
                 sendValue = "LaunchQuant.Value.On"
             else:
-                launch_quant_value = self._record_quantization    
+                launch_quant_value = self._launch_quantization   
                 sendValue = "LaunchQuant.Value.Idle" 
-                                
+            
             if(launch_quant_value in LAUNCH_QNTZ_FIXED_RATES):
                 quant_idx = LAUNCH_QNTZ_FIXED_RATES.index(launch_quant_value)
                 #LaunchQuant values 8 Bars, 4 Bars, 2 Bars, 1 Bar, 1/2, 1/2t, 1/4, 1/4t, 1/8, 1/8t, 1/16, 1/16t, 1/32
@@ -1265,8 +1319,11 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             elif(index==2):
                 self._increment_fixed_length_value()
             else:
-                self._fixed_length = FIXED_LENGTH_VALUES[index-3]
-                self._fixed_length_on = True   
+                if(self._fixed_length != FIXED_LENGTH_VALUES[index-3]):
+                    self._fixed_length = FIXED_LENGTH_VALUES[index-3]
+                    self._fixed_length_on = True
+                else:
+                    self._fixed_length_on = not self._fixed_length_on    
             self._display_fixed_length_info()                       
                 
     def _set_rec_qntz_value(self, value, button):        
@@ -1280,7 +1337,11 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             elif(index==2):
                 self._increment_rec_qntz_value()
             else:
-                self.song().midi_recording_quantization = REC_QNTZ_FIXED_RATES[index-3]   
+                if(self.song().midi_recording_quantization != REC_QNTZ_FIXED_RATES[index-3]):
+                    self.song().midi_recording_quantization = REC_QNTZ_FIXED_RATES[index-3]  
+                else:
+                    self._record_quantization_on = not self._record_quantization_on
+                    self.song().midi_recording_quantization = self._record_quantization if self._record_quantization_on else Rec_Q.rec_q_no_q
                 
     def _set_launch_qntz_value(self, value, button):        
         if value is not 0 or not button.is_momentary():
@@ -1293,8 +1354,12 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             elif(index==2):
                 self._increment_launch_qntz_value()
             else:
-                self.song().clip_trigger_quantization = LAUNCH_QNTZ_FIXED_RATES[index-3]
-            
+                if(self.song().clip_trigger_quantization != LAUNCH_QNTZ_FIXED_RATES[index-3]):
+                    self.song().clip_trigger_quantization = LAUNCH_QNTZ_FIXED_RATES[index-3]
+                else:
+                    self._launch_quantization_on = not self._launch_quantization_on
+                    self.song().clip_trigger_quantization = self._launch_quantization if self._launch_quantization_on else _Q.q_no_q
+
     def _do_arm_track(self, value, button):        
         if value is not 0 or not button.is_momentary():
             tracks = self.tracks_to_use()
@@ -1304,12 +1369,13 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 if track.arm:
                     track.arm = False
                 elif track.can_be_armed:
-                    if self._get_song().exclusive_arm:
+                    if (not self._record_mode_on and self._get_song().exclusive_arm) or (self._record_mode_on and self._armed_track_count == 0): 
                         for t in self._get_song().tracks:
                             if t.can_be_armed and t.arm:
                                 t.arm = False
         
                     track.arm = True
+                    self._armed_track_count += 1
                     if self._get_song().view.selected_track != track:
                         self._get_song().view.selected_track = track         
             
@@ -1317,6 +1383,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         if value is not 0 or not button.is_momentary():
             tracks = self.tracks_to_use()
             track_index = list(self._stop_track_clip_buttons).index(button) + self.track_offset()
+            
             if in_range(track_index, 0, len(tracks)) and tracks[track_index] in self.song().tracks:
                 track = tracks[track_index]                    
                 track.mute = not track.mute  
@@ -1360,10 +1427,6 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 
     def _get_fixed_length_msg(self):
         if(self._fixed_length_on):
-            Live.Base.log("_get_fixed_length - signature_denominator " + str(self.song().signature_denominator))
-            Live.Base.log("_get_fixed_length - signature_numerator " + str(self.song().signature_numerator))
-            Live.Base.log("_get_fixed_length - _fixed_length " + str(self._fixed_length))
-            Live.Base.log("_get_fixed_length - function " + str(self._get_fixed_length()))
             if self._fixed_length == 0.25:
                 return ("ON: 1 Beat")
             elif self._fixed_length == 0.5:
@@ -1377,7 +1440,12 @@ class SpecialProSessionComponent(SpecialSessionComponent):
 
     def _get_fixed_length(self):
         """ Returns the fixed length to use for recording or creating clips. """
+        if(self._fixed_length== 0.25):
+            return 1.0
         return 4.0 / self.song().signature_denominator * self.song().signature_numerator * (self._fixed_length)
+
+    def _get_launch_quant(self):
+        return self.song().clip_trigger_quantization
 
     def set_stop_track_clip_buttons(self, buttons):
         if (not self._is_pro_mode_on()) or buttons!=None:

@@ -91,6 +91,8 @@ class Colors:
         ClipStarted = Rgb.LIME
         ClipTriggeredPlay = Rgb.LIME_BLINK
         ClipStopped = Rgb.YELLOW_HALF
+        ClipFoldedTrack = Rgb.ORANGE
+        ClipUnFoldedTrack = Rgb.ORANGE_HALF
         class Shift:
             On = Rgb.LIME_BLINK
             Off = Rgb.LIME

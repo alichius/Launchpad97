@@ -84,6 +84,8 @@ class Colors:
         ClipStarted = Rgb.GREEN_PULSE
         ClipStopped = Rgb.RED_THIRD
         ClipTriggeredPlay = Rgb.GREEN_BLINK
+        ClipFoldedTrack = Rgb.PINK
+        ClipUnFoldedTrack = Rgb.PINK_THIRD
         class Shift:
             On = Rgb.RED
             Off = Rgb.RED_THIRD

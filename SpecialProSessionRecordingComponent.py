@@ -2,6 +2,7 @@
 import Live
 from _Framework.ClipCreator import ClipCreator
 from _Framework.SessionRecordingComponent import SessionRecordingComponent, track_playing_slot, track_is_recording
+_Q = Live.Song.Quantization
 
 class SpecialProSessionRecordingComponent(SessionRecordingComponent):
 
@@ -27,64 +28,44 @@ class SpecialProSessionRecordingComponent(SessionRecordingComponent):
         super(SpecialProSessionRecordingComponent, self).set_enabled(enable)
         
     def _get_fixed_length(self):
-        return self._parent._get_fixed_length()        
-        
+        return self._parent._get_fixed_length()   
+
+    def _get_launch_quant(self):
+        return self._parent._get_launch_quant()      
+    
     def _on_record_button_value(self):
         if self.is_enabled():
             if self._is_record_mode:
-                self._handle_note_mode_record_behavior()
+                self._handle_pro_mode_record_behavior()
             else:
                 if not self._stop_recording():
-                    self._control_surface.show_message("SESSION RECORD ON")
                     self._start_recording()
+                    self._control_surface.show_message("SESSION RECORD ON")
+                    #Live.Base.log("SpecialSessionRecordingComponent show_message SESSION RECORD ON")
                 else:
                     self._control_surface.show_message("SESSION RECORD OFF")
+                    #Live.Base.log("SpecialSessionRecordingComponent show_message SESSION RECORD OFF")
                     
 
-    def _handle_note_mode_record_behavior(self):
-        #Live.Base.log("SpecialSessionRecordingComponent - _handle_note_mode_record_behavior")
+    def _handle_pro_mode_record_behavior(self):
+        #Live.Base.log("SpecialSessionRecordingComponent - _handle_pro_mode_record_behavior")
         track = self._target_track_component.target_track #Selected Track
-        #Live.Base.log("SpecialSessionRecordingComponent - track: " + str(track.name))
-        if self._track_can_record(track): #Track have input and is not master/return
-            playing_slot = track_playing_slot(track) #Clip of track is playing
-            #Live.Base.log("SpecialSessionRecordingComponent - playing_slot: " + str(playing_slot))
-            # IS PLAYING BUT NOT RECORDING
-            if self._should_overdub(track):
-                #Live.Base.log("SpecialSessionRecordingComponent - should_overdub")
-                self.song().overdub = True
-                playing_slot.fire()
-            elif not self._stop_recording():
-                #Live.Base.log("SpecialSessionRecordingComponent - Not should_overdub")
-                self._prepare_new_slot(track)
-                if self._is_fixed_length_on():
-                    self.song().trigger_session_record(self._get_fixed_length())
-                else:
-                    self.song().trigger_session_record()
+        status = self.song().session_record_status
+        was_recording = status != Live.Song.SessionRecordStatus.off or self.song().session_record
+        if self._track_can_record(track) and not was_recording:
+            #Live.Base.log("SpecialSessionRecordingComponent - REC IN NEW SLOT")
+            if self._is_fixed_length_on():
+                #Live.Base.log("SpecialProSessionRecordingComponent Not should_overdub" + str(self._get_fixed_length()))
+                self.song().trigger_session_record(self._get_fixed_length())
+            else:
+                self.song().trigger_session_record()
+            #scene_index = list(self.song().scenes).index(self.song().view.selected_scene)
         elif not self._stop_recording():
-            #Live.Base.log("SpecialSessionRecordingComponent - _handle_note_mode_record_behavior._start_recording")
             self._start_recording()
-
-    def _should_overdub(self, track):
-            playing_slot = track_playing_slot(track) #Clip of track is playing
-            if(not track_is_recording(track) and playing_slot != None):
-                clip = playing_slot.clip
-                return clip and clip.is_midi_clip
-            return False
-            
-            
-
-    def _prepare_new_slot(self, track):
-        song = self.song()
-        song.overdub = False
-        view = song.view
-        try:
-            slot_index = list(song.scenes).index(view.selected_scene)
-            track.stop_all_clips(False)
-            self._jump_to_next_slot(track, slot_index)
-        except Live.Base.LimitationError:
-            self._handle_limitation_error_on_scene_creation()
+            self._control_surface.show_message("SESSION RECORD ON")
+        else:
+            self._control_surface.show_message("SESSION RECORD OFF")
 
     def _track_can_record(self, track):
-        #trk_can_record = trk.can_be_armed and (trk.arm or trk.implicit_arm) and not slot.has_clip and self.song().session_record_status == Live.Song.SessionRecordStatus.off
-        return track in self.song().tracks and track.can_be_armed
+        return track.can_be_armed and (track.arm or track.implicit_arm) and track in self.song().tracks
             
