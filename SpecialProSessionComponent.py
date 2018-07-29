@@ -497,11 +497,11 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._end_undo_step_task.kill()
         
         self._launch_quantization = self._get_song().clip_trigger_quantization
-        self._launch_quantization_on = True
+        self._launch_quantization_on = self._launch_quantization !=_Q.q_no_q
         self._song.add_clip_trigger_quantization_listener(self._on_clip_trigger_quantization_changed_in_live)
         
         self._record_quantization =Rec_Q.rec_q_sixtenth
-        self._record_quantization_on = False
+        self._record_quantization_on = self._record_quantization != Rec_Q.rec_q_no_q
         self._song.add_midi_recording_quantization_listener(self._on_record_quantization_changed_in_live)
         
         
@@ -1081,10 +1081,10 @@ class SpecialProSessionComponent(SpecialSessionComponent):
     def _update_stop_track_clip_buttons(self):
         self._tap_button = None
         if self.is_enabled():
-            for index in xrange(8):
-                self._update_select_leds(index)  
             for index in xrange(self._num_tracks):
                 self._update_stop_clips_led(index)
+            for index in xrange(8):
+                self._update_select_leds(index)  
 
     def _update_stop_clips_led(self, index):
         #Live.Base.log("SpecialProSessionComponent _update_stop_clips_led index: " + str(index) + " / " + str(self._stop_track_clip_buttons))
