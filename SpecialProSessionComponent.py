@@ -115,7 +115,7 @@ class SpecialClipSlotComponent(ClipSlotComponent):
         if not self._is_shifting():
             return False
         
-        if self._is_folding():
+        if self._is_copypasting():
             return False
 
         if self._is_quantizing():
@@ -158,13 +158,15 @@ class SpecialClipSlotComponent(ClipSlotComponent):
             except (AttributeError, TypeError):
                 pass
             
-    def _do_fold_track(self, clip_slot):
-        track = clip_slot.canonical_parent
-        if track.is_foldable:
-            if track.fold_state == 0:
-                track.fold_state = 1
-            else:
-                track.fold_state = 0
+    def _do_copypaste_clip(self, clip_slot):
+        if self._should_copy() and clip_slot.has_clip:
+            self._set_slot_copy_buffer(clip_slot)
+        else:
+            if (not self._should_copy()):
+                try:
+                    self._get_slot_copy_buffer().duplicate_clip_to(clip_slot)
+                except RuntimeError:
+                    pass
             
     def _do_double_loop(self, clip_slot):
         self._do_select_clip(clip_slot)
@@ -213,20 +215,20 @@ class SpecialClipSlotComponent(ClipSlotComponent):
         if(not self._is_fixed_length_on()):
             super(SpecialClipSlotComponent, self)._do_launch_clip(value)
         else:     
-            Live.Base.log("SpecialClipSlotComponent _do_launch_clip FIXED")
+            #Live.Base.log("SpecialClipSlotComponent _do_launch_clip FIXED")
             button = self._launch_button_value.subject # MATRIX BUTTON
             launch_pressed = value or not button.is_momentary() # LAUNCH MSG
             quant = self._get_launch_quant()        
             if not self.has_clip(): #Have CLIP
-                Live.Base.log("SpecialClipSlotComponent _do_launch_clip FIXED empty slot")
+                #Live.Base.log("SpecialClipSlotComponent _do_launch_clip FIXED empty slot")
                 self._has_fired_slot = True
             
             if button.is_momentary():
                 if(not self.has_clip()):
-                    Live.Base.log("_do_launch_clip FIXED EMPTY SLOT")
+                    #Live.Base.log("_do_launch_clip FIXED EMPTY SLOT")
                     self._clip_slot.fire(record_length=self._get_fixed_length(), launch_quantization=quant)
                 else:
-                    Live.Base.log("_do_launch_clip FIXED CLIP SLOT")
+                    #Live.Base.log("_do_launch_clip FIXED CLIP SLOT")
                     self._clip_slot.clip.set_fire_button_state(value != 0)
             elif launch_pressed:
                 if(not self.has_clip()):
@@ -253,8 +255,8 @@ class SpecialClipSlotComponent(ClipSlotComponent):
     def _is_shifting(self):
         return self._parent._is_shifting()
 
-    def _is_folding(self):
-        return self._parent._is_folding()
+    def _is_copypasting(self):
+        return self._parent._is_copypasting()
 
     def _is_quantizing(self):
         return self._parent._is_quantizing()
@@ -288,6 +290,15 @@ class SpecialClipSlotComponent(ClipSlotComponent):
     
     def _should_arm(self):
         return self._parent._should_arm()
+
+    def _should_copy(self):
+        return self._parent._should_copy()
+    
+    def _set_slot_copy_buffer(self, slot):
+        self._parent._set_slot_copy_buffer(slot)
+    
+    def _get_slot_copy_buffer(self):
+        return self._parent._get_slot_copy_buffer()  
     
     def _print(self, msg):
         self._parent._print(str(msg)) 
@@ -311,13 +322,13 @@ class SpecialClipSlotComponent(ClipSlotComponent):
                     else:
                         #Live.Base.log("SpecialClipSlotComponent _do_duplicate_clip")
                         self._do_duplicate_clip()    
-                elif self._is_folding() and value:
+                elif self._is_copypasting() and value:
                     if self._is_shifting():
                         #Live.Base.log("SpecialClipSlotComponent _do_launch_scene")
                         self._parent._do_launch_scene(value)
                     else:                    
                     #Live.Base.log("SpecialClipSlotComponent _do_fold_track")
-                        self._do_fold_track(self._clip_slot)                              
+                        self._do_copypaste_clip(self._clip_slot)                              
                 elif self._is_doubling() and value:
                     if self._is_shifting():
                         #Live.Base.log("SpecialClipSlotComponent _capture_and_insert_scene")
@@ -355,8 +366,8 @@ class SpecialSceneComponent(SceneComponent):
     def _is_shifting(self):
         return self._parent._is_shifting()
 
-    def _is_folding(self):
-        return self._parent._is_folding()
+    def _is_copypasting(self):
+        return self._parent._is_copypasting()
 
     def _is_deleting(self):
         return self._parent._is_deleting()
@@ -390,6 +401,15 @@ class SpecialSceneComponent(SceneComponent):
     
     def _is_pro_mode_on(self):
         return self._parent._is_pro_mode_on()
+    
+    def _set_slot_copy_buffer(self, slot):
+        self._parent._set_slot_copy_buffer(slot)
+    
+    def _get_slot_copy_buffer(self):
+        return self._parent._get_slot_copy_buffer()  
+
+    def _should_copy(self):
+        return self._parent._should_copy()
     
     def _do_delete_scene(self, scene_for_overrides):
         try:
@@ -465,6 +485,8 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._osd = None
         self._song = livesong
         
+        self._slot_copy_buffer = None
+        
         self._shift_button = None
         self._click_button = None
         self._undo_button = None
@@ -532,7 +554,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         # PAD: SEL/VIEW - DOUBLE: CLEAR VIEW - LROW: LAUNCH QUANT
         
         self._set_click_button(self._side_buttons[2]) 
-        # +PAD: FOLD/UNFOLD +SHIFT PAD: LAUNCH SCN??? - DOUBLE: CLIC ON/OFF - LROW: TEMPO FUNCTIONS
+        # +PAD: COPY/PASTE CLIP +SHIFT PAD: LAUNCH SCN??? - DOUBLE: CLIC ON/OFF - LROW: TEMPO FUNCTIONS
         
         self._set_quantize_button(self._side_buttons[3]) 
         # +PAD: QUANT +SHIFT PAD: CREATE SCN???  - DOUBLE: REC QUANT ON/OFF - LROW: REC QUANT
@@ -563,6 +585,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._duplicate_pressed = False
         self._double_pressed = False
         self._quantize_pressed = False
+        self._slot_copy_buffer = None
         
         self._click_button = None
         self._undo_button = None
@@ -578,7 +601,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         #Live.Base.log("SpecialProSessionComponent _is_shifting: " + str(self._shift_pressed))
         return self._shift_pressed
 
-    def _is_folding(self):
+    def _is_copypasting(self):
         return self._click_pressed
     
     def _is_deleting(self):
@@ -613,6 +636,16 @@ class SpecialProSessionComponent(SpecialSessionComponent):
     
     def _set_pro_mode_on(self, pro_mode_on):
         self._pro_mode_on = pro_mode_on
+    
+    def _set_slot_copy_buffer(self, slot):
+        self._slot_copy_buffer = slot
+    
+    def _get_slot_copy_buffer(self):
+        return self._slot_copy_buffer     
+    
+    def _should_copy(self):
+        #Live.Base.log("SpecialProSessionComponent _should_copy: " + str(self._slot_copy_buffer))
+        return self._slot_copy_buffer is None  
     
     def _get_song(self):
         return self._song
@@ -740,10 +773,11 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                 if self._shift_pressed:
                     self._print("LAUNCH SCENE [SET TEMPO]?")
                 else:
-                    self._print("FOLD/UNFOLD TRACK [SET TEMPO]?")
+                    self._print("COPY/PASTE CLIP [SET TEMPO]?")
             else:
                 self._click_pressed = False
                 self._tap_button = None
+                self._slot_copy_buffer = None
                 if (time.time() - self._last_click_time) < SHORT_PRESS:
                     self.song().metronome = not self.song().metronome
                     if self.song().metronome :
@@ -1098,12 +1132,17 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             track_index = index + self.track_offset()
             if 0 <= track_index < len(tracks_to_use):
                 track = tracks_to_use[track_index]
-                if(self._record_pressed and track.can_be_armed):
-                    #Live.Base.log("SpecialProSessionComponent _record_pressed: " + str(index))
-                    if track.arm:
-                        button.send_value("Recording.On")
-                    else:
-                        button.send_value("Recording.Off")
+                if(self._record_pressed):
+                    if track.can_be_armed:#Live.Base.log("SpecialProSessionComponent _record_pressed: " + str(index))
+                        if track.arm:
+                            button.send_value("Recording.On")
+                        else:
+                            button.send_value("Recording.Off")
+                    elif track.is_foldable:
+                        if track.fold_state == 0:
+                            button.send_value("ProSession.ClipUnFoldedTrack")
+                        else:
+                            button.send_value("ProSession.ClipFoldedTrack")  
                 elif(self._duplicate_pressed):
                     #Live.Base.log("SpecialProSessionComponent _duplicate_pressed: " + str(index))
                     if track.solo:
@@ -1366,19 +1405,25 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             track_index = list(self._stop_track_clip_buttons).index(button) + self.track_offset()
             if in_range(track_index, 0, len(tracks)) and tracks[track_index] in self.song().tracks:
                 track = tracks[track_index]                    
-                if track.arm:
-                    track.arm = False
-                elif track.can_be_armed:
-                    if (not self._record_mode_on and self._get_song().exclusive_arm) or (self._record_mode_on and self._armed_track_count == 0): 
-                        for t in self._get_song().tracks:
-                            if t.can_be_armed and t.arm:
-                                t.arm = False
+                if track.can_be_armed:
+                    if track.arm:
+                        track.arm = False
+                    else:
+                        if (not self._record_mode_on and self._get_song().exclusive_arm) or (self._record_mode_on and self._armed_track_count == 0): 
+                            for t in self._get_song().tracks:
+                                if t.can_be_armed and t.arm:
+                                    t.arm = False
         
-                    track.arm = True
-                    self._armed_track_count += 1
-                    if self._get_song().view.selected_track != track:
-                        self._get_song().view.selected_track = track         
-            
+                        track.arm = True
+                        self._armed_track_count += 1
+                        if self._get_song().view.selected_track != track:
+                            self._get_song().view.selected_track = track         
+                elif track.is_foldable:
+                    if track.fold_state == 0:
+                        track.fold_state = 1
+                    else:
+                        track.fold_state = 0
+                                
     def _do_mute_track(self, value, button):        
         if value is not 0 or not button.is_momentary():
             tracks = self.tracks_to_use()
