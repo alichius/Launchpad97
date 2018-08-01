@@ -155,7 +155,8 @@ class InstrumentControllerComponent(CompoundComponent):
         #Live.Base.log("InstrumentControllerComponent - _scales_toggle: "+ str(value) + "/"+ str(sender))
         if self.is_enabled():
             if (value is not 0):
-                if(self._scales.is_drumrack):
+                self._get_drumrack_device()
+                if(self._scales.is_drumrack and self._drum_group_device != None):
                     self._toggle_note_repeat_selector()
                     self._scales_toggle_button.turn_on()
                 else:
@@ -166,16 +167,15 @@ class InstrumentControllerComponent(CompoundComponent):
                     self._scales.update()
             else:
                 self._scales_toggle_button.turn_off()
-                if(not self._scales.is_drumrack):
-                    self._scales.set_enabled(False)
-                    #TODO: save scale setting in track or clip. detect if changed
-                    if Settings.INSTRUMENT__SAVE_SCALE != None and Settings.INSTRUMENT__SAVE_SCALE == "track":
-                        self._scales.update_object_name(self._track_controller.selected_track)
-                    if Settings.INSTRUMENT__SAVE_SCALE != None and Settings.INSTRUMENT__SAVE_SCALE == "clip":
-                        self._scales.update_object_name(self._track_controller.selected_clip)
-                    self._osd.mode = self._osd_mode_backup
-                    if(not self._scales.is_quick_scale):
-                        self._note_repeat.set_enabled(False)
+                self._scales.set_enabled(False)
+                #TODO: save scale setting in track or clip. detect if changed
+                if Settings.INSTRUMENT__SAVE_SCALE != None and Settings.INSTRUMENT__SAVE_SCALE == "track":
+                    self._scales.update_object_name(self._track_controller.selected_track)
+                if Settings.INSTRUMENT__SAVE_SCALE != None and Settings.INSTRUMENT__SAVE_SCALE == "clip":
+                    self._scales.update_object_name(self._track_controller.selected_clip)
+                self._osd.mode = self._osd_mode_backup
+                if(not self._scales.is_quick_scale):
+                    self._note_repeat.set_enabled(False)
                 self.update()
 
     # Transposes key one octave up 
@@ -520,10 +520,9 @@ class InstrumentControllerComponent(CompoundComponent):
             self._get_drumrack_device()
 
             if self._scales.is_drumrack and not self._scales.is_diatonic and not self._scales.is_chromatic:
-                if self._drum_group_device != None:
-                    self._scales.set_drumrack(True) 
-                else:
-                    self._scales.set_drumrack(False)
+                self._scales.set_drumrack(True) 
+            else:
+                self._scales.set_drumrack(False)
 
             for button, (x, y) in self._matrix.iterbuttons():
                 button.use_default_message()
@@ -547,7 +546,7 @@ class InstrumentControllerComponent(CompoundComponent):
                                 note = -99 #Avoid light errors
 
                         if note < 128 and note >= 0:
-                            if self._drum_group_device != None and self._drum_group_device.can_have_drum_pads and self._drum_group_device.has_drum_pads and self._drum_group_device.drum_pads[note].chains:
+                            if self._drum_group_device == None or (self._drum_group_device != None and self._drum_group_device.can_have_drum_pads and self._drum_group_device.has_drum_pads and self._drum_group_device.drum_pads[note].chains):
                                 light = self._getLightForNote(note)
                                 button.set_light(light)
                                 button.set_enabled(False)

@@ -38,6 +38,7 @@ class DeviceComponent(LiveDeviceComponent):
         self._locked_device_bank = [0,0,0,0]
         self._lock_button_press = [0,0,0,0]
         self._locked_devices = [None,None,None,None]
+        self._selected_device = None
         
         self._is_active = False
         self._force = True
@@ -101,6 +102,7 @@ class DeviceComponent(LiveDeviceComponent):
         self._next_bank_button = None
         self._precision_button = None
         self._precision_mode = None
+        self._selected_device = None
         #self._remaining_buttons = None UNUSED
         self._device = None
 
@@ -327,10 +329,10 @@ class DeviceComponent(LiveDeviceComponent):
                         else:# New device is added
                             if self._device!=None:
                                 self._locked_devices[index] = self._device
-                                if self._device != None:
-                                    self._control_surface.show_message(" '"+self.get_device_track_name(self._device)+" - "+str(self._device.name)+"' STORED IN LOCK: " + str(index+1))
-                                    self._locked_device_index = index
-                                    self.update()
+                                self._control_surface.show_message(" '"+self.get_device_track_name(self._device)+" - "+str(self._device.name)+"' STORED IN LOCK: " + str(index+1))
+                                self._locked_device_index = index
+                                self._selected_device = self._device    
+                                self.update()
                                     
                     else: #Lock was used
                         #remove saved device
@@ -342,15 +344,20 @@ class DeviceComponent(LiveDeviceComponent):
                     #use selected device
                     if self._locked_device_index == index:
                         if self._locked_devices[index] != None:
-                            if self._locked_devices[index]!= None:
-                                self._control_surface.show_message("UNLOCKED FROM '"+self.get_device_track_name(self._locked_devices[index])+" - "+str(self._locked_devices[index].name)+"' ("+str(index+1)+")")
+                            self._control_surface.show_message("UNLOCKED FROM '"+self.get_device_track_name(self._locked_devices[index])+" - "+str(self._locked_devices[index].name)+"' ("+str(index+1)+")")
+                        
                         self._locked_device_index = None
+                        if self._selected_device != None:
+                            self.set_device(self._selected_device)
+                            self.song().view.select_device(self._selected_device)
+                        
                     elif self._locked_devices[index] != None:
+                        self._selected_device = self._device
                         self._locked_device_index = index
                         self.set_device(self._locked_devices[index])
                         if self._locked_devices[index]!= None:
                             self._control_surface.show_message("LOCKED TO '"+self.get_device_track_name(self._locked_devices[index])+" - "+str(self._locked_devices[index].name)+" (" +str(index+1)+")" )
-                        self.update()
+            self.update()
             self.update_track_buttons()
             self.update_device_buttons()
             self._update_OSD()
@@ -511,7 +518,6 @@ class DeviceComponent(LiveDeviceComponent):
         if self.is_enabled():
             if(self._prev_device_button != None):
                 self._prev_device_button.set_on_off_values("Mode.Device.On", "Mode.Device.Off")
-                
                 if(len(self.selected_track().devices) > 0 and self.selected_device_idx > 0 and not self._is_locked_to_device):
                     self._prev_device_button.turn_on()
                 else:
