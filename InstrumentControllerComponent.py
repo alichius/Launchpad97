@@ -34,7 +34,9 @@ class InstrumentControllerComponent(CompoundComponent):
         self.set_scales_toggle_button(side_buttons[0])#Enable scale selecting mode
         self.set_octave_up_button(side_buttons[2])#Shift octave up
         self.set_octave_down_button(side_buttons[3])#Shift octave down
-
+        
+        self._osd_mode_backup = "Instrument"
+        
         self._track_controller = self.register_component(TrackControllerComponent(control_surface = control_surface, implicit_arm = True))
         self._track_controller.set_enabled(False)
         
