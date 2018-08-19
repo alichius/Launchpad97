@@ -522,10 +522,16 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._launch_quantization_on = self._launch_quantization !=_Q.q_no_q
         self._song.add_clip_trigger_quantization_listener(self._on_clip_trigger_quantization_changed_in_live)
         
-        self._record_quantization =Rec_Q.rec_q_sixtenth
-        self._record_quantization_on = self._record_quantization != Rec_Q.rec_q_no_q
+        if(self._get_song().midi_recording_quantization== Rec_Q.rec_q_no_q):
+            self._record_quantization = Rec_Q.rec_q_sixtenth
+        else:
+            self._record_quantization = self._get_song().midi_recording_quantization
+            
+            
+        self._record_quantization_on = self._get_song().midi_recording_quantization != Rec_Q.rec_q_no_q
+            
+            
         self._song.add_midi_recording_quantization_listener(self._on_record_quantization_changed_in_live)
-        
         
         self.song().add_session_record_listener(self._on_session_record_changed_in_live)
         
