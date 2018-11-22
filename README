@@ -6,3 +6,107 @@ It does not require any external tool like Max for Live (M4L) in order to work. 
 
 manual and download : http://motscousus.com/stuff/2011-07_Novation_Launchpad_Ableton_Live_Scripts/
 
+
+This Version have a new Mode: SESSION PRO MODE
+
+YOU HAVE TO RENAME THE DOWNLOADED ZIP IN ORDER TO INSTALL THE SCRIPT!!!! (remove the "master" postfix)
+
+Features listed below:
+
+ This mode adds functions to the classic Session Mode. To activate Pro Session Mode, press and release Session button (mode button remains amber). Repeat to back to normal Session Mode.
+
+The down navigation buttons allow to navigate using the Session Box (note that it only have 7 rows) The scene buttons allow you to perform several functions:
+
+GLOBAL ACTIONS
+- Undo/redo actions
+- Tap tempo
+- Change tempo (+/-1 , +/-5)
+- Nudge up/down
+- Metro on/off
+- Set trigger quantization value
+- Set record quantization value
+- Set fixed length record value
+- Session record on/off
+- Autorecord function
+
+SCENE ACTIONS
+- Launch Scene
+- Create Scene
+- Duplicate Scene
+- Capture Scene (make a copy of all playing clips to a new scene)
+- Delete Scene
+
+CLIP ACTIONS
+- Launch Clip
+- Select Clip (View Clip/Device Details)
+- Quantize Clip
+- Duplicate Clip
+- Double Clip Length (Only MIDI)
+- Delete Clip
+
+TRACK ACTIONS
+- Fold/Unfold Track
+- Mute track
+- Solo Track
+- Arm Track
+- Stop Track playing clip
+
+The matrix of buttons will reflect the clip status in the Live Session view. The last row of buttons will act as a Global Selector or as a Track function selector. The last row of buttons will act as a Track Stop function when using it alone.
+
+The Most of the scene buttons works as shift keys for other functions.
+Also have alternate functions by making a long press or double clicking them:
+
+- Undo button : a long press will perform a redo !
+
+- Shift button :
+-> Double click: hide the Detail view.
+-> Shift + Matrix Button: Select clip and show Clip Detail/Device detail alternately.
+-> Shift + Last Row: Sets the Clip Trigger Quantization Value.
+
+- Clic button :
+-> Double click: Turn Metronome ON/OFF.
+-> Tempo + Matrix Button: Fold/Unfold the group track if is possible (Note that the group tracks are displayed in other color)
+-> Shift + Tempo + Matrix Button: Launch the clip scene
+-> Tempo + Last Row: Sets the tempo of the song.
+>> Metro ON/OFF.
+>> Nudge Up/Down
+>> +/- Tempo
+>> Tap Tempo
+
+- Quantize button :
+-> Double click: Turn Record Quantization ON/OFF.
+-> Quantize + Matrix Button: Quantizes clip (based on Record Quantization resolution)
+-> Shift + Quantize + Matrix Button: Create new Scene
+-> Quantize + Last Row: Sets the record quantization resolution.
+
+- Double button :
+-> Double click: Turn Fixed Length Record ON/OFF.
+-> Double + Matrix Button: Double clips (ONY MIDI)
+-> Shift + Double + Matrix Button: Capture new Scene (Creates a new scene with all the clips that are currently playing)
+-> Double + Last Row: Sets the fixed length record resolution.
+
+- Delete button :
+-> Double click: Unmute all tracks.
+-> Delete + Matrix Button: Delete clips
+-> Shift + Delete + Matrix Button: Delete Scene
+-> Delete + Last Row: Mute Track
+
+- Duplicate button :
+-> Double click: Unsolo all tracks.
+-> Duplicate + Matrix Button: Duplicate clips
+-> Shift + Duplicate + Matrix Button: Duplicate Scene
+-> Duplicate + Last Row: Solo Track
+
+- Record button : It have 2 modes. NORMAL MODE and PRO MODE.
+->Shift + Record turns PRO MODE ON/OFF
+
+-> NORMAL RECORD MODE
+>> Single click: Turn Session Record ON/OFF
+>> Record + Matrix Button: Arm clip track and launch clip (Record/Overdub clip)
+>> Record + Last Row: Arm Track
+
+-> PRO RECORD MODE
+>> Single click: Jump to the next available clip slot and start recording for each armed track
+>> Matrix Button: Arm clip track and launch clip (Record/Overdub clip)
+>> Record + Last Row: Arm Track (not exclusive)
+
