@@ -504,6 +504,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
         self._click_pressed = False
         self._record_pressed = False
         self._record_mode_on = False
+        self._is_arming = False
         self._armed_track_count=0
         
         self._last_undo_time = time.time()
@@ -1093,10 +1094,11 @@ class SpecialProSessionComponent(SpecialSessionComponent):
                     self._print("REC CLIP [ARM TRACK]?")
                 else:
                     self._record_pressed = False
-                    if (time.time() - self._last_record_time) < LONG_PRESS:
+                    if (time.time() - self._last_record_time) < LONG_PRESS and not self._is_arming:
                         #Live.Base.log("SpecialProSessionComponent self._session_record._on_record_button_value()")
                         self._session_record._on_record_button_value()
                     self._armed_track_count=0
+                    self._is_arming = False
             self.update()
 
     def _update_record_button(self):
@@ -1410,6 +1412,7 @@ class SpecialProSessionComponent(SpecialSessionComponent):
             tracks = self.tracks_to_use()
             track_index = list(self._stop_track_clip_buttons).index(button) + self.track_offset()
             if in_range(track_index, 0, len(tracks)) and tracks[track_index] in self.song().tracks:
+                self._is_arming = True
                 track = tracks[track_index]                    
                 if track.can_be_armed:
                     if track.arm:
