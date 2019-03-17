@@ -1,0 +1,262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Launchpad95 : PRO MODE</title>
+	<link rel="stylesheet" type="text/css" media="screen" href="file:///D|/DAW/MIDI SCRIPTING/Launchpad95   Ableton LIVE control surface remote scripts for Novation Launchpad_archivos/site.css">
+	<script type="text/javascript" src="file:///D|/DAW/MIDI SCRIPTING/Launchpad95   Ableton LIVE control surface remote scripts for Novation Launchpad_archivos/site.js"></script>
+</head>
+<body>
+
+	<style>
+		table.launchpad{border:2px solid grey; background-color:#444; padding:25px; border-collapse:separate; border-spacing:7px 7px; border-radius:10px;page-break-inside:avoid }
+
+		table.launchpad tr td{color:#CCC; vertical-align:top; vertical-align:middle; border:0px solid #333; width:60px; height:60px; text-align:center}
+		table.launchpad tr td{background-color:#888; border-radius:5px; background:radial-gradient(ellipse at center, #888 12%,#777 99%);}
+
+		table.launchpad tr td.green{color:#666; background: #00aa00; background:radial-gradient(ellipse at center, #77cc33 12%,#669933 99%);}
+		table.launchpad tr td.mandarin{color:#666; background: #e74c3c; background:radial-gradient(ellipse at center, #77cc33 12%,#669933 99%);}
+		table.launchpad tr td.shifter{color:#666; background: #33fcff; background:radial-gradient(ellipse at center, #77cc33 12%,#669933 99%);}
+		table.launchpad tr td.orange{color:#666; background: #f5b7b1; background:radial-gradient(ellipse at center, #77cc33 12%,#669933 99%);}
+		table.launchpad tr td.red{color:#666; background: #ff4444; background:radial-gradient(ellipse at center, #ff4444 12%,#bb3333 99%);}
+		table.launchpad tr td.amber{color:#666; background: #ffA544; background:radial-gradient(ellipse at center, #ffA544 12%,#aa7744 99%);}
+
+		table.launchpad tr td.side{border:1px solid #333; border-radius:60px; }
+		table.launchpad tr.top td{border:1px solid #333; border-radius:60px; }
+
+		div.note{padding:2px; text-align:left; color:#CCC; position:absolute; width:140px; height:45px; font-size:12px; margin-left:65px; margin-top:-14px; border:1px solid #666; background-color:rgba(127,127,127,0.5); border-radius:5px;}
+		div.noteTop{padding:2px; text-align:left; color:#CCC; float:top; position:absolute; width:50px; font-size:12px; margin-left:0px; margin-top:-85px; height:60px; border:1px solid #666; background-color:rgba(127,127,127,0.5); border-radius:5px;}
+
+
+	</style>
+  <style type="text/css" media="print">
+   div.note {color:black; background-color:#ddd;}
+   div.noteTop {color:black; background-color:#ddd;}
+   p { margin: 0.2em 0 }
+   body {
+     font: 10pt Georgia, "Times New Roman", Times, serif;
+     background-color: white;
+     color: black;
+   }
+   ul {list-style: dash;}
+   blockquote, ul {margin: 0;}
+   table.launchpad {page-break-inside: avoid; zoom: 0.9;}
+   section {page-break-before: always;}
+   li,dd{color:black;}
+  </style>
+
+<div id="main">
+<section>
+	<h3 id="toc_3_Instrument Controller Mode" tabindex="-1">Pro Session Mode</h3>
+	<p>
+		This mode adds functions to the classic Session Mode.
+		To activate Pro Session Mode, press and release Session button (mode button remains amber). 
+		Repat to back to normal Session Mode. 
+	</p>
+	<p>
+		The down navigation buttons allow to navigate using the Session Box (note that it olny have 7 rows)
+		The scene buttons allow you to perform severla functions:<br>
+        <br/>
+        <ul>
+		<li><strong>GLOBAL ACTIONS</strong></li>
+        <li>UNDO/REDO ACTIONS</li>
+        <li>TAP TEMPO</li>
+        <li>CHANGE TEMPO (+/-1 , +/-5)</li>
+        <li>NUDGE UP/DOWN</li>
+        <li>METRO ON/OFF</li>
+        <li>SET TRIGGER QUANTIZATION VALUE</li>
+		<li>SET RECORD QUANTIZATION VALUE</li>
+        <li>SET FIXED LENGTH RECORD VALUE</li>
+        <li>SESSION RECORD ON/OFF</li>
+        <li>AUTORECORD FUNCTION</li>
+        <br/>
+        <li><strong>SCENE ACTIONS</strong></li>
+        <li>- Launch Scene</li>
+        <li>- Create Scene</li>
+        <li>- Duplicate Scene</li>
+        <li>- Capture Scene (make a copy of all playing clips to a new scene)</li>
+	    <li>- Delete Scene</li>
+	    <br/>
+        <li><strong>CLIP ACTIONS</strong></li>
+        <li>- Launch Clip</li>
+        <li>- Select Clip (View Clip/Device Deails)</li>
+        <li>- Quantize Clip</li>
+        <li>- Duplicate Clip</li>
+        <li>- Double Clip Lenght (Only MIDI)</li>
+	    <li>- Delete Clip</li>
+	    <br/>
+        <li><strong>TRACK ACTIONS</strong></li>
+        <li>- Fold/Unfold Track </li>
+        <li>- Mute track</li>
+        <li>- Solo Track</li>
+        <li>- Arm Track</li>
+        <li>- Stop Track playing clip</li>
+	    <br/>
+        
+        
+        </ul>
+        </p>
+	<p>
+		The matrix of buttons will reflect the clip status in the Live Session view.
+        The last row of buttons will act as a Global Selector or as a Track function selector.
+        The last row of buttons will act as a Track Stop function when using it alone.
+	</p>
+	<p>
+		The Most of the scene buttons works as shift keys for other functions.<br>
+        Also have alternate functions by making a long press or double clicking them: <br>
+        <br>
+		- Undo button : a long press will perform a redo !<br>
+        <br>
+		<strong>- Shift button :</strong>  <br>
+        	-> Double click: hide the Detail view. <br>
+            -> Shift + Matrix Button: Select clip and show Clip Detail/Device detail alternately. <br>
+            -> Shift + Last Row: Sets the Clip Trigger Quantization Value. <br>
+            <br>
+		<strong>- Clic button :</strong>  <br>
+        	-> Double click: Turn Metronome ON/OFF. <br>
+            -> Tempo + Matrix Button: Fold/Unfold the group track if is possible (Note that the group tracks are displayed in other color) <br>
+            -> Shift + Tempo + Matrix Button: Launch the clip scene <br>
+            -> Tempo + Last Row: Sets the tempo of the song. <br>
+              	>> Metro ON/OFF. <br>
+              	>> Nudge Up/Down<br> 
+              	>> +/- Tempo <br> 
+              	>> Tap Tempo <br>
+            <br>    
+		<strong>- Quantize button :</strong>  <br>
+        	-> Double click: Turn Record Quantization ON/OFF. <br>
+            -> Quantize + Matrix Button: Quantizes clip (based on Record Quantization resolution)<br>
+            -> Shift + Quantize + Matrix Button: Create new Scene <br>
+            -> Quantize + Last Row: Sets the record quantizatin resolution. <br>
+            <br>          
+		<strong>- Double button :</strong>  <br>
+        	-> Double click: Turn Fixed Lenght Record ON/OFF. <br>
+            -> Double + Matrix Button: Double clips (ONY MIDI)<br>
+            -> Shift + Double + Matrix Button: Capture new Scene (Creates a new scene with all the clips that are currently playing) <br>
+            -> Double + Last Row: Sets the fixed lenght record resolution. <br>
+            <br>          
+		<strong>- Delete button :</strong>  <br>
+        	-> Double click: Unmute all tracks. <br>
+            -> Delete + Matrix Button: Delete clips<br>
+            -> Shift + Delete + Matrix Button: Delete Scene<br>
+            -> Delete + Last Row: Mute Track <br>
+            <br>           
+		<strong>- Duplicate button :</strong>  <br>
+        	-> Double click: Unsolo all tracks. <br>
+            -> Duplicate + Matrix Button: Duplicate clips<br>
+            -> Shift + Duplicate + Matrix Button: Duplicate Scene<br>
+            -> Duplicate + Last Row: Solo Track <br>
+            <br>                  
+		<strong>- Record button :</strong>  It have 2 modes. NORMAL MODE and PRO MODE.<br> 
+        ->Shift + Record turns PRO MODE ON/OFF<br><br>
+        -> NORMAL RECORD MODE <br>
+        	>> Single click: Turn Session Record ON/OFF<br>
+            >> Record + Matrix Button: Arm clip track and launch clip (Record/Overdub clip)<br>
+            >> Record + Last Row: Arm Track <br><br>
+        -> PRO RECORD MODE <br>
+        	>> Single click: Jump to the next available clip slot and start recording for each armed track<br>
+            >> Matrix Button: Arm clip track and launch clip (Record/Overdub clip)<br>
+            >> Record + Last Row: Arm Track (not exclusive) <br>            
+            <br>                                 
+	</p>
+
+<table class="launchpad">
+		<tbody><tr class="top">
+			<td class="green">prev scene</td>
+			<td class="green">next scene</td>
+			<td class="green">prev track</td>
+			<td class="green">next track</td>
+			<td class="amber">Session mode</td>
+			<td class="amber">user&nbsp;1 Inst.</td>
+			<td class="amber">user&nbsp;2 step</td>
+			<td class="amber">mixer mode</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+            <td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td class="side green">UNDO</td>		
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+            <td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td class="side amber">SHIFT</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+            <td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td class="side shifter">CLIC</td>		
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+            <td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td class="side amber">QUANT</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+            <td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td class="side green">DOUBL</td>		
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+            <td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td class="side red">DEL</td>
+		</tr>
+			<tr>
+			<td>&nbsp;</td>
+            <td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td class="side amber">DUPLIC</td>	
+		</tr>
+			<tr>
+			<td class="red">&nbsp;</td>
+			<td class="green">&nbsp;</td>
+			<td class="green">&nbsp;</td>		
+            <td class="amber">&nbsp;</td>
+			<td class="amber">&nbsp;</td>
+			<td class="amber">&nbsp;</td>		
+			<td class="amber">&nbsp;</td>
+			<td class="amber">&nbsp;</td>
+			<td class="side red">REC</td>		
+		</tr>
+	</tbody></table>
+	
+</div></body></html>
